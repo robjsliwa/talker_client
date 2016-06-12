@@ -1,4 +1,6 @@
 import React from 'react';
+import SocketActions from '../actions/socket-actions';
+import SocketStore from '../stores/socket-store';
 
 export default class RegisterScreen extends React.Component {
   constructor(props) {
@@ -11,28 +13,29 @@ export default class RegisterScreen extends React.Component {
     };
   }
 
-  onUserName(e) {
+  _onUserName(e) {
     this.setState({
       userName: e.target.value,
       isError: false,
     })
   }
 
-  onRoomName(e) {
+  _onRoomName(e) {
     this.setState({
       roomName: e.target.value,
       isError: false,
     })
   }
 
-  register() {
+  _register() {
     console.log(this.state);
-    if (!this.validateRegistrationInput()) {
+    if (!this._validateRegistrationInput()) {
       return
     }
+    SocketActions.addUserToRoom(this.state.userName, this.state.roomName);
   }
 
-  validateRegistrationInput() {
+  _validateRegistrationInput() {
     if (this.state.userName === "" || this.state.roomName === "") {
       this.setState({
         isError: true,
@@ -56,7 +59,7 @@ export default class RegisterScreen extends React.Component {
               id="room-id-input"
               autofocus
               value={this.props.userName}
-              onChange={this.onUserName.bind(this)}
+              onChange={this._onUserName.bind(this)}
             />
           </div>
         </div>
@@ -68,12 +71,12 @@ export default class RegisterScreen extends React.Component {
               id="room-id-input"
               autofocus
               value={this.props.roomName}
-              onChange={this.onRoomName.bind(this)}
+              onChange={this._onRoomName.bind(this)}
             />
           <label className={!this.state.isError ? "error-label hidden" : "error-label"}  id="room-id-input-label">Type in room name or press Random to auto generate random room name.</label>
           </div>
           <div id="room-id-input-buttons">
-            <button id="join-button" onClick={this.register.bind(this)}>JOIN</button>
+            <button id="join-button" onClick={this._register.bind(this)}>JOIN</button>
           <button id="random-button">RANDOM</button>
           </div>
         </div>

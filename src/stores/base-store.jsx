@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import AppDispatcher from '../dispatchers/app-dispatcher.jsx';
+import AppDispatcher from '../dispatcher/app-dispatcher.jsx';
 
 export default class BaseStore extends EventEmitter {
   constructor() {
