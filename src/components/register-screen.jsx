@@ -1,8 +1,10 @@
 import React from 'react';
+import { withRouter } from 'react-router';
 import SocketActions from '../actions/socket-actions';
 import SocketStore from '../stores/socket-store';
+import SocketConstants from '../constants/socket-constants';
 
-export default class RegisterScreen extends React.Component {
+export default withRouter(class RegisterScreen extends React.Component {
   constructor(props) {
     super(props)
 
@@ -11,6 +13,21 @@ export default class RegisterScreen extends React.Component {
       roomName: '',
       isError: false,
     };
+  }
+
+  componentDidMount() {
+    SocketStore.addSocketListener(SocketConstants.SOCKEY_ROOM_READY, this._onRoomReady.bind(this));
+  }
+
+  componentWillUnmount() {
+    SocketStore.removeSocketListener(SocketConstants.SOCKEY_ROOM_READY, this._onRoomReady.bind(this));
+  }
+
+  _onRoomReady() {
+    console.log('In room ready: ' + SocketStore.isRoomReady);
+    if (SocketStore.isRoomReady === true) {
+      this.props.router.push('/chat/' + this.state.roomName);
+    }
   }
 
   _onUserName(e) {
@@ -92,4 +109,4 @@ export default class RegisterScreen extends React.Component {
       </div>
     </div>
   }
-}
+});

@@ -1,5 +1,5 @@
 import BaseStore from './base-store';
-import { SOCKET_ERROR, SOCKET_CONNECT, SOCKET_DISCONNECT, SOCKET_ADD_USER_TO_ROOM } from '../constants/socket-constants';
+import SocketConstants from '../constants/socket-constants';
 import AppDispatcher from '../dispatcher/app-dispatcher';
 
 class SocketStore extends BaseStore {
@@ -11,6 +11,9 @@ class SocketStore extends BaseStore {
     this.ws.onopen = this._open.bind(this);
     this.ws.onclose = this._close.bind(this);
     this.isConnected = false;
+    this.isRoomReady = false;
+    this.userName = "";
+    this.roomName = "";
   }
 
   addSocketListener(name, callback) {
@@ -22,30 +25,62 @@ class SocketStore extends BaseStore {
   }
 
   _actionsHandler(action) {
-    /*switch (action.actionType) {
-      case
-    }*/
+    console.log(action);
+    console.log('actionsHandler: ' + JSON.stringify(action));
+    console.log('actionType: ' + action.actionType);
+    switch (action.actionType) {
+      case SocketConstants.SOCKET_ADD_USER_TO_ROOM:
+        console.log('ADD_USER in store');
+        if (action.data && action.data.userName && action.data.roomName) {
+          this._addUserToRoom(action.data.userName, action.data.roomName);
+        }
+        break;
+
+      case SocketConstants.SOCKET_SEND_TEXT_MESSAGE:
+        console.log('SEND_TEXT in store');
+        if (action.data &&
+            action.data.userName &&
+            action.data.roomName &&
+            action.data.chatText
+        ) {
+          this._sendTextMessage(action.data);
+        }
+        break;
+
+      default:
+          console.log('unknown socket action');
+    }
   }
 
   _message(e) {
     try {
-
+      console.log(e);
+      let payload = JSON.parse(e.data);
+      console.log(payload);
+      console.log('Payload name: ' + payload.name);
+      if (payload.name === 'chat message') {
+        console.log('From: ' + payload.data.user + ' => ' + payload.data.text);
+        this.emit(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, {
+          from: payload.data.user,
+          text: payload.data.text,
+        });
+      }
     }
     catch (err) {
-      this.emit(SOCKET_ERROR, err)
+      this.emit(SocketConstants.SOCKET_ERROR, err)
     }
   }
 
   _open() {
     console.log('Socket open');
     this.isConnected = true;
-    this.emit(SOCKET_CONNECT);
+    this.emit(SocketConstants.SOCKET_CONNECT);
   }
 
   _close() {
     console.log('Socket close');
     this.isConnected = false;
-    this.emit(SOCKET_DISCONNECT);
+    this.emit(SocketConstants.SOCKET_DISCONNECT);
   }
 
   _addUserToRoom(userName, roomName) {
@@ -59,6 +94,31 @@ class SocketStore extends BaseStore {
     };
     try {
       this.ws.send(JSON.stringify(message));
+      this.userName = userName;
+      this.roomName = roomName;
+      this.isConnected = true;
+      this.isRoomReady = true;
+      localStorage.setItem('userName', userName);
+      localStorage.setItem('roomName', roomName);
+      this.emit(SocketConstants.SOCKEY_ROOM_READY);
+    }
+    catch(err) {
+      console.log(err);
+    }
+  }
+
+  _sendTextMessage(data) {
+    console.log('in sendTextMessage: ' + data);
+    let messageText = {
+      name: 'chat message',
+      data: {
+        user: data.userName,
+        room: data.roomName,
+        text: data.chatText,
+      }
+    };
+    try {
+      this.ws.send(JSON.stringify(messageText))
     }
     catch(err) {
       console.log(err);
@@ -70,12 +130,4 @@ class SocketStore extends BaseStore {
   }
 }
 
-const socketStore = new SocketStore();
-
-socketStore._dispatchToken = AppDispatcher.register((action) => {
-  if (action.actionType === SOCKET_ADD_USER_TO_ROOM) {
-    if (action.data && action.data.userName && action.data.roomName) {
-      socketStore._addUserToRoom(action.data.userName, action.data.roomName);
-    }
-  }
-});
+export default new SocketStore();

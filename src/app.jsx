@@ -4,6 +4,7 @@ import { Router, Route, IndexRoute, useRouterHistory } from 'react-router';
 import { createHashHistory } from 'history';
 import App from './index';
 import RegisterScreen from './components/register-screen';
+import Chat from './components/chat';
 
 const appHistory = useRouterHistory(createHashHistory)({ queryKey: false });
 
@@ -12,6 +13,7 @@ const appHistory = useRouterHistory(createHashHistory)({ queryKey: false });
 render(<Router history={appHistory}>
   <Route handler={App}>
     <IndexRoute component={RegisterScreen} />
+  <Route path="/chat/:roomname" component={Chat} />
     <Route path="/" component={RegisterScreen} />
   </Route>
 </Router>, document.querySelector('#target'));

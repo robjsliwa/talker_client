@@ -18,8 +18,8 @@ export default class BaseStore extends EventEmitter {
     this.removeListener('STORE_CHANGE', callback);
   }
 
-  registerActions(actions) {
-    this._dispatchToken = AppDispatcher.register(actions());
+  registerActions(actionsRegistered) {
+    this._dispatchToken = AppDispatcher.register(actionsRegistered());
   }
 
   get dispatchToken() {
