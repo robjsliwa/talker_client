@@ -6,12 +6,8 @@ class SocketStore extends BaseStore {
   constructor() {
     super()
     this.registerActions(() => this._actionsHandler.bind(this));
-    this.ws = new WebSocket('ws://localhost:4652');
-    this.ws.onmessage = this._message.bind(this);
-    this.ws.onopen = this._open.bind(this);
-    this.ws.onclose = this._close.bind(this);
-    this.isConnected = false;
-    this.isRoomReady = false;
+    this._createWebSocket();
+    this.reconnectAttempts = 0;
     this.userName = "";
     this.roomName = "";
   }
@@ -22,6 +18,15 @@ class SocketStore extends BaseStore {
 
   removeSocketListener(name, callback) {
     this.removeListener(name, callback);
+  }
+
+  _createWebSocket() {
+    this.ws = new WebSocket('ws://localhost:4652');
+    this.ws.onmessage = this._message.bind(this);
+    this.ws.onopen = this._open.bind(this);
+    this.ws.onclose = this._close.bind(this);
+    this.isConnected = false;
+    this.isRoomReady = false;
   }
 
   _actionsHandler(action) {
@@ -69,6 +74,7 @@ class SocketStore extends BaseStore {
 
   _open() {
     console.log('Socket open');
+    this.reconnectAttempts = 1;
     this.isConnected = true;
     this.emit(SocketConstants.SOCKET_CONNECT);
   }
@@ -77,6 +83,19 @@ class SocketStore extends BaseStore {
     console.log('Socket close');
     this.isConnected = false;
     this.emit(SocketConstants.SOCKET_DISCONNECT);
+
+    let interval = this._getReconnectInterval(this.reconnectAttempts);
+
+    console.log('Will reconnect in ' + interval / 1000 + ' seconds...');
+
+    setTimeout(() => {
+      this.reconnectAttempts++;
+      this._createWebSocket();
+    }, interval);
+  }
+
+  _getReconnectInterval(interval) {
+    return Math.min(15, (Math.pow(2, interval) - 1)) * 1000;
   }
 
   _addUserToRoom(userName, roomName) {
