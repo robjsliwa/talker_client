@@ -63,29 +63,65 @@ export default class Chat extends React.Component {
   }
 
   render() {
-    return <div>
-      <div id="room-selection" className="">
-        <h1>chat</h1>
-        <div id="recent-rooms">
-          <p>Messages:</p>
-        {this.state.messages.map((message) => {
-          return <ul id="recent-rooms-list">{message}</ul>
-        })}
+    return <div className="container-fluid">
+      <div className="row">
+        <div className="col-xs-6 col-md-4">
+          <section className="module">
+            <ol className="text-conversation">
+              {this.state.messages.map((message) => {
+                return <li className="other">
+                  <div className="avatar">
+                  </div>
+                  <div className="messages">
+                    <p>{message}</p>
+                    <time dateTime="2009-11-13T20:00">Toby • 15 min</time>
+                  </div>
+                </li>
+              })}
+            </ol>
+            <div className="footer">
+              <div id="message-selection">
+                <div>
+                  <div id="room-id-input-div">
+                    <input
+                      type="text"
+                      id="room-id-input"
+                      autofocus
+                      value={this.state.chatBox}
+                      onChange={this._onChatBox.bind(this)}
+                    />
+                  </div>
+                </div>
+                <div id="room-id-input-buttons">
+                  <button id="join-button" onClick={this._onSendMessage.bind(this)}>SEND</button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-        <p id="instructions">Enter message</p>
-        <div>
-          <div id="room-id-input-div">
-            <input
-              type="text"
-              id="room-id-input"
-              autofocus
-              value={this.state.chatBox}
-              onChange={this._onChatBox.bind(this)}
-            />
+        <div id="room-selection" className="col-xs-12 col-md-8">
+          <h1>chat</h1>
+          <div id="recent-rooms">
+            <p>Messages:</p>
+          {this.state.messages.map((message) => {
+            return <ul id="recent-rooms-list">{message}</ul>
+          })}
           </div>
-        </div>
-        <div id="room-id-input-buttons">
-          <button id="join-button" onClick={this._onSendMessage.bind(this)}>SEND</button>
+          <p id="instructions">Enter message</p>
+          <div>
+            <div id="room-id-input-div">
+              <input
+                type="text"
+                id="room-id-input"
+                autofocus
+                value={this.state.chatBox}
+                onChange={this._onChatBox.bind(this)}
+              />
+            </div>
+          </div>
+          <div id="room-id-input-buttons">
+            <button id="join-button" onClick={this._onSendMessage.bind(this)}>SEND</button>
+          </div>
         </div>
       </div>
     </div>

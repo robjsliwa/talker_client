@@ -66,6 +66,12 @@ class SocketStore extends BaseStore {
           text: payload.data.text,
         });
       }
+
+      if (payload.name === 'room add') {
+        if (payload && payload.data && payload.data.user) {
+          localStorage.setItem('userID', payload.data.user.id);
+        }
+      }
     }
     catch (err) {
       this.emit(SocketConstants.SOCKET_ERROR, err)
