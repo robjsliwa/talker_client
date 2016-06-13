@@ -11,12 +11,32 @@ export default class Chat extends React.Component {
       chatBox: "",
       userName: "",
       roomName: "",
-      messages: ['tes1', 'test2'],
+      messages: [],
     }
   }
 
   componentDidMount() {
     let currentUserName = localStorage.getItem('userName');
+    if (currentUserName === null || SocketStore.isRoomReady === false) {
+      SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
+    } else {
+      this._onRoomReady()
+    }
+  }
+
+  componentWillUnmount() {
+    SocketStore.removeSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
+    SocketStore.removeSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
+  }
+
+  _onSocketOpen() {
+    let currentUserName = 'Slinky';
+    SocketStore.addSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
+    SocketActions.joinUserToRoom(currentUserName, this.props.params.roomname)
+  }
+
+  _onRoomReady() {
+    let currentUserName = localStorage.getItem('userName')
     this.setState({
       userName: currentUserName,
       roomName: this.props.params.roomname,
@@ -24,15 +44,8 @@ export default class Chat extends React.Component {
     SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
   }
 
-  componentWillUnmount() {
-    SocketStore.removeSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
-  }
-
   _onReceivedMessage(message) {
-    console.log('_inReceivedMessage');
-    console.log('ReceivedMessage: (' + message.from + ') ' + message.text);
     this.state.messages.push('(' + message.from + ') ' + message.text);
-    console.log(this.state.messages);
     this.forceUpdate();
   }
 

@@ -25,19 +25,19 @@ class SocketStore extends BaseStore {
   }
 
   _actionsHandler(action) {
-    console.log(action);
-    console.log('actionsHandler: ' + JSON.stringify(action));
-    console.log('actionType: ' + action.actionType);
     switch (action.actionType) {
       case SocketConstants.SOCKET_ADD_USER_TO_ROOM:
-        console.log('ADD_USER in store');
         if (action.data && action.data.userName && action.data.roomName) {
           this._addUserToRoom(action.data.userName, action.data.roomName);
         }
         break;
 
+      case SocketConstants.SOCKET_JOIN_USER_TO_ROOM:
+        if (action.data && action.data.userName && action.data.roomName) {
+          this._joinUserToRoom(action.data.userName, action.data.roomName);
+        }
+
       case SocketConstants.SOCKET_SEND_TEXT_MESSAGE:
-        console.log('SEND_TEXT in store');
         if (action.data &&
             action.data.userName &&
             action.data.roomName &&
@@ -54,12 +54,8 @@ class SocketStore extends BaseStore {
 
   _message(e) {
     try {
-      console.log(e);
       let payload = JSON.parse(e.data);
-      console.log(payload);
-      console.log('Payload name: ' + payload.name);
       if (payload.name === 'chat message') {
-        console.log('From: ' + payload.data.user + ' => ' + payload.data.text);
         this.emit(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, {
           from: payload.data.user,
           text: payload.data.text,
@@ -84,7 +80,6 @@ class SocketStore extends BaseStore {
   }
 
   _addUserToRoom(userName, roomName) {
-    console.log('Sending addUserToRoom: ' + userName + ' ' + roomName);
     let message = {
       name: 'room add',
       data: {
@@ -100,7 +95,30 @@ class SocketStore extends BaseStore {
       this.isRoomReady = true;
       localStorage.setItem('userName', userName);
       localStorage.setItem('roomName', roomName);
-      this.emit(SocketConstants.SOCKEY_ROOM_READY);
+      this.emit(SocketConstants.SOCKET_ROOM_READY);
+    }
+    catch(err) {
+      console.log(err);
+    }
+  }
+
+  _joinUserToRoom(userName, roomName) {
+    let message = {
+      name: 'room add',
+      data: {
+        user: userName,
+        room: roomName,
+      }
+    };
+    try {
+      this.ws.send(JSON.stringify(message));
+      this.userName = userName;
+      this.roomName = roomName;
+      this.isConnected = true;
+      this.isRoomReady = true;
+      localStorage.setItem('userName', userName);
+      localStorage.setItem('roomName', roomName);
+      this.emit(SocketConstants.SOCKET_ROOM_READY);
     }
     catch(err) {
       console.log(err);
@@ -108,7 +126,6 @@ class SocketStore extends BaseStore {
   }
 
   _sendTextMessage(data) {
-    console.log('in sendTextMessage: ' + data);
     let messageText = {
       name: 'chat message',
       data: {

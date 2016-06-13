@@ -16,15 +16,17 @@ export default withRouter(class RegisterScreen extends React.Component {
   }
 
   componentDidMount() {
-    SocketStore.addSocketListener(SocketConstants.SOCKEY_ROOM_READY, this._onRoomReady.bind(this));
+    // TEST TEST TEST
+    //localStorage.removeItem('userName');
+    //localStorage.removeItem('roomName');
+    SocketStore.addSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
   }
 
   componentWillUnmount() {
-    SocketStore.removeSocketListener(SocketConstants.SOCKEY_ROOM_READY, this._onRoomReady.bind(this));
+    SocketStore.removeSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
   }
 
   _onRoomReady() {
-    console.log('In room ready: ' + SocketStore.isRoomReady);
     if (SocketStore.isRoomReady === true) {
       this.props.router.push('/chat/' + this.state.roomName);
     }
@@ -45,7 +47,6 @@ export default withRouter(class RegisterScreen extends React.Component {
   }
 
   _register() {
-    console.log(this.state);
     if (!this._validateRegistrationInput()) {
       return
     }
