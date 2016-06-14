@@ -9,6 +9,7 @@ class SocketStore extends BaseStore {
     this._createWebSocket();
     this.reconnectAttempts = 0;
     this.userName = "";
+    this.userID = "";
     this.roomName = "";
   }
 
@@ -39,7 +40,7 @@ class SocketStore extends BaseStore {
 
       case SocketConstants.SOCKET_JOIN_USER_TO_ROOM:
         if (action.data && action.data.userName && action.data.roomName) {
-          this._joinUserToRoom(action.data.userName, action.data.roomName);
+          this._joinUserToRoom(action.data.userName, action.data.userID, action.data.roomName);
         }
 
       case SocketConstants.SOCKET_SEND_TEXT_MESSAGE:
@@ -61,15 +62,27 @@ class SocketStore extends BaseStore {
     try {
       let payload = JSON.parse(e.data);
       if (payload.name === 'chat message') {
+        console.log('Message Text');
+        console.log(payload.data);
         this.emit(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, {
           from: payload.data.user,
+          fromID: payload.data.userID,
           text: payload.data.text,
+          textID: payload.data.textID,
         });
       }
 
       if (payload.name === 'room add') {
-        if (payload && payload.data && payload.data.user) {
+        if (payload && payload.data) {
+          console.log(payload.data);
+          this.userName = payload.data.user.name;
+          this.userID = payload.data.user.id;
+          this.roomName = payload.data.room.name;
           localStorage.setItem('userID', payload.data.user.id);
+          localStorage.setItem('userName', payload.data.user.name);
+          localStorage.setItem('roomName', payload.data.room.name);
+          this.isRoomReady = true;
+          this.emit(SocketConstants.SOCKET_ROOM_READY);
         }
       }
     }
@@ -114,36 +127,25 @@ class SocketStore extends BaseStore {
     };
     try {
       this.ws.send(JSON.stringify(message));
-      this.userName = userName;
-      this.roomName = roomName;
       this.isConnected = true;
-      this.isRoomReady = true;
-      localStorage.setItem('userName', userName);
-      localStorage.setItem('roomName', roomName);
-      this.emit(SocketConstants.SOCKET_ROOM_READY);
     }
     catch(err) {
       console.log(err);
     }
   }
 
-  _joinUserToRoom(userName, roomName) {
+  _joinUserToRoom(userName, userID, roomName) {
     let message = {
       name: 'room add',
       data: {
         user: userName,
+        userID: userID,
         room: roomName,
       }
     };
     try {
       this.ws.send(JSON.stringify(message));
-      this.userName = userName;
-      this.roomName = roomName;
       this.isConnected = true;
-      this.isRoomReady = true;
-      localStorage.setItem('userName', userName);
-      localStorage.setItem('roomName', roomName);
-      this.emit(SocketConstants.SOCKET_ROOM_READY);
     }
     catch(err) {
       console.log(err);
@@ -155,6 +157,7 @@ class SocketStore extends BaseStore {
       name: 'chat message',
       data: {
         user: data.userName,
+        userID: data.userID,
         room: data.roomName,
         text: data.chatText,
       }

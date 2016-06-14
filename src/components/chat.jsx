@@ -10,6 +10,7 @@ export default class Chat extends React.Component {
     this.state = {
       chatBox: "",
       userName: "",
+      userID: "",
       roomName: "",
       messages: [],
     }
@@ -30,22 +31,40 @@ export default class Chat extends React.Component {
   }
 
   _onSocketOpen() {
-    let currentUserName = 'Slinky';
+    let currentUserName = localStorage.getItem('userName');
+    let currentUserID = localStorage.getItem('userID');
+
+    console.log('currentUserName: ' + currentUserName + ' currentUserID: ' + currentUserID);
+
+    if (currentUserName === null || currentUserID === null) {
+      // Display modal dialog to ask for user name
+
+      // TEST TEST TEST
+      currentUserName = 'Slinky';
+    }
+
     SocketStore.addSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
-    SocketActions.joinUserToRoom(currentUserName, this.props.params.roomname)
+    SocketActions.joinUserToRoom(currentUserName, currentUserID, this.props.params.roomname);
   }
 
   _onRoomReady() {
-    let currentUserName = localStorage.getItem('userName')
+    //let currentUserName = localStorage.getItem('userName')
+    //let currentUserID = localStorage.getItem('userID')
     this.setState({
-      userName: currentUserName,
+      userName: SocketStore.userName,
+      userID: SocketStore.userID,
       roomName: this.props.params.roomname,
     });
     SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
   }
 
   _onReceivedMessage(message) {
-    this.state.messages.push('(' + message.from + ') ' + message.text);
+    this.state.messages.push({
+      from: message.from,
+      fromID: message.fromID,
+      text: message.text,
+      textID: message.textID,
+    });
     this.forceUpdate();
   }
 
@@ -56,7 +75,7 @@ export default class Chat extends React.Component {
   }
 
   _onSendMessage(e) {
-    SocketActions.sendMessage(this.state.userName, this.state.roomName, this.state.chatBox)
+    SocketActions.sendMessage(this.state.userName, this.state.userID, this.state.roomName, this.state.chatBox)
     this.setState({
       chatBox: "",
     });
@@ -69,12 +88,12 @@ export default class Chat extends React.Component {
           <section className="module">
             <ol className="text-conversation">
               {this.state.messages.map((message) => {
-                return <li className="other">
+                return <li className={this.state.userID === message.fromID ? "self" : "other"} key={message.textID}>
                   <div className="avatar">
                   </div>
                   <div className="messages">
-                    <p>{message}</p>
-                    <time dateTime="2009-11-13T20:00">Toby • 15 min</time>
+                    <p>{message.text}</p>
+                    <time dateTime="2009-11-13T20:00">{message.from} • 15 min</time>
                   </div>
                 </li>
               })}
@@ -100,28 +119,7 @@ export default class Chat extends React.Component {
           </section>
         </div>
         <div id="room-selection" className="col-xs-12 col-md-8">
-          <h1>chat</h1>
-          <div id="recent-rooms">
-            <p>Messages:</p>
-          {this.state.messages.map((message) => {
-            return <ul id="recent-rooms-list">{message}</ul>
-          })}
-          </div>
-          <p id="instructions">Enter message</p>
-          <div>
-            <div id="room-id-input-div">
-              <input
-                type="text"
-                id="room-id-input"
-                autofocus
-                value={this.state.chatBox}
-                onChange={this._onChatBox.bind(this)}
-              />
-            </div>
-          </div>
-          <div id="room-id-input-buttons">
-            <button id="join-button" onClick={this._onSendMessage.bind(this)}>SEND</button>
-          </div>
+          <h1>TODO: Video Area</h1>
         </div>
       </div>
     </div>

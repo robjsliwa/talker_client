@@ -5,9 +5,9 @@
 .text-conversation {
   list-style: none;
   background: #333333;
-  padding: 0px 0 50px 0;
-  max-height: 70vh;
-  min-height: 70vh;
+  padding: 0 0 50px 0;
+  max-height: 87vh;
+  min-height: 87vh;
   overflow: scroll; }
   .text-conversation li {
     padding: 0.5rem;
@@ -319,7 +319,7 @@ div#room-selection {
 div#message-selection {
   margin: 0 0 0 0;
   width: 25em;
-  padding: 1em 1.5em 1.3em 0; }
+  padding: 1em 1.5em 0 0; }
 
 p {
   color: #eee;
