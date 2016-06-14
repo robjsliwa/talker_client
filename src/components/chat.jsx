@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import SocketActions from '../actions/socket-actions';
 import SocketStore from '../stores/socket-store';
 import SocketConstants from '../constants/socket-constants';
@@ -64,14 +65,24 @@ export default class Chat extends React.Component {
       fromID: message.fromID,
       text: message.text,
       textID: message.textID,
+      timestamp: message.timestamp,
     });
+    console.log(message);
     this.forceUpdate();
+    let element = document.getElementById("message-scroll");
+    element.scrollTop = element.scrollHeight;
   }
 
   _onChatBox(e) {
     this.setState({
       chatBox: e.target.value,
-    })
+    });
+  }
+
+  _onKeyPress(e) {
+    if (e.key === 'Enter') {
+      this._onSendMessage();
+    }
   }
 
   _onSendMessage(e) {
@@ -86,14 +97,14 @@ export default class Chat extends React.Component {
       <div className="row">
         <div className="col-xs-6 col-md-4">
           <section className="module">
-            <ol className="text-conversation">
+            <ol id="message-scroll" className="text-conversation">
               {this.state.messages.map((message) => {
                 return <li className={this.state.userID === message.fromID ? "self" : "other"} key={message.textID}>
                   <div className="avatar">
                   </div>
                   <div className="messages">
                     <p>{message.text}</p>
-                    <time dateTime="2009-11-13T20:00">{message.from} • 15 min</time>
+                    <time dateTime="2009-11-13T20:00">{message.from} • {moment(message.timestamp).fromNow()}</time>
                   </div>
                 </li>
               })}
@@ -108,6 +119,7 @@ export default class Chat extends React.Component {
                       autofocus
                       value={this.state.chatBox}
                       onChange={this._onChatBox.bind(this)}
+                      onKeyPress={this._onKeyPress.bind(this)}
                     />
                   </div>
                 </div>

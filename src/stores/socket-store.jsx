@@ -69,6 +69,7 @@ class SocketStore extends BaseStore {
           fromID: payload.data.userID,
           text: payload.data.text,
           textID: payload.data.textID,
+          timestamp: payload.data.timestamp,
         });
       }
 
@@ -160,6 +161,7 @@ class SocketStore extends BaseStore {
         userID: data.userID,
         room: data.roomName,
         text: data.chatText,
+        timestamp: Date.now(),
       }
     };
     try {
