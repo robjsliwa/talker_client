@@ -18,7 +18,7 @@ export default withRouter(class RegisterScreen extends React.Component {
   componentDidMount() {
     // TEST TEST TEST
     //localStorage.removeItem('userName');
-    // localStorage.removeItem('userID');
+    //localStorage.removeItem('userID');
     //localStorage.removeItem('roomName');
     SocketStore.addSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
   }

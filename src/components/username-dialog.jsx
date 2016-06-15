@@ -31,12 +31,14 @@ export default class UserNameDialog extends React.Component {
       userName: '',
     }
   }
-  showModal() {
+  showModal(callback) {
     this.refs.modal.show();
+    this.callback = callback;
   }
 
   hideModal() {
     this.refs.modal.hide();
+    this.callback(this.state.userName);
   }
 
   _onUserNameChange(e) {
@@ -47,7 +49,6 @@ export default class UserNameDialog extends React.Component {
 
   render() {
     return <div>
-        <button onClick={this.showModal.bind(this)}>Open</button>
         <Modal ref="modal">
           <div style={styles.container}>
             <h2 style={styles.title}>Enter your name</h2>

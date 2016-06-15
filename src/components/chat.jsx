@@ -44,13 +44,19 @@ export default class Chat extends React.Component {
 
     if (currentUserName === null || currentUserID === null) {
       // Display modal dialog to ask for user name
-
-      // TEST TEST TEST
-      currentUserName = 'Slinky';
+      console.log('Asking for user name');
+      this.refs.usernamemodal.showModal(this._receiveUserName.bind(this));
+      return;
     }
 
     SocketStore.addSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
     SocketActions.joinUserToRoom(currentUserName, currentUserID, this.props.params.roomname);
+  }
+
+  _receiveUserName(userName) {
+    console.log('Received userName: ' + userName);
+    SocketStore.addSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
+    SocketActions.joinUserToRoom(userName, '', this.props.params.roomname);
   }
 
   _onSocketDisconnet() {
@@ -60,8 +66,6 @@ export default class Chat extends React.Component {
   }
 
   _onRoomReady() {
-    //let currentUserName = localStorage.getItem('userName')
-    //let currentUserID = localStorage.getItem('userID')
     this.setState({
       userName: SocketStore.userName,
       userID: SocketStore.userID,
@@ -144,7 +148,7 @@ export default class Chat extends React.Component {
         </div>
         <div id="room-selection" className="col-xs-12 col-md-8">
           <h1>TODO: Video Area</h1>
-          <UserNameDialog />
+          <UserNameDialog ref="usernamemodal" />
         </div>
       </div>
     </div>
