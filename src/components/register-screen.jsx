@@ -92,7 +92,7 @@ export default withRouter(class RegisterScreen extends React.Component {
     return <div>
       <div id="room-selection" className="">
         <h1>talker</h1>
-        <p id="instructions">Please enter display name</p>
+        <p id="instructions">Enter display name</p>
         <div>
           <div id="room-id-input-div">
             <input
@@ -104,7 +104,7 @@ export default withRouter(class RegisterScreen extends React.Component {
             />
           </div>
         </div>
-        <p id="instructions">Please enter room name</p>
+        <p id="instructions">Enter room name</p>
         <div>
           <div id="room-id-input-div">
             <input
@@ -120,10 +120,6 @@ export default withRouter(class RegisterScreen extends React.Component {
             <button id="join-button" onClick={this._register.bind(this)}>JOIN</button>
           <button id="random-button" onClick={this._randomRegister.bind(this)}>RANDOM</button>
           </div>
-        </div>
-        <div id="recent-rooms">
-          <p>Recently used rooms:</p>
-          <ul id="recent-rooms-list"></ul>
         </div>
       </div>
 
