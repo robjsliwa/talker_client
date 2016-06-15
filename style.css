@@ -70,6 +70,25 @@
   width: 100%;
   height: 60px; }
 
+input[type=username] {
+  border: none;
+  border-bottom: solid 1px #4c4c4f;
+  font-size: 2em;
+  background-color: transparent;
+  color: #000000;
+  padding: .4em 0;
+  margin-right: 20px;
+  width: 100%;
+  display: block;
+  text-align: center; }
+
+input[type="username"]:focus {
+  border-bottom: solid 2px #4285F4;
+  outline: none; }
+
+input[type="username"].invalid {
+  border-bottom: solid 2px #F44336; }
+
 @keyframes pulse {
   from {
     opacity: 0; }
@@ -326,8 +345,6 @@ p {
   font-weight: 300;
   line-height: 1.6em; }
 
-/*////// room selection end /////////////////////*/
-/*////// icons CSS start ////////////////////////*/
 #icons {
   bottom: 77px;
   left: 6vw;

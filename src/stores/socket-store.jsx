@@ -14,11 +14,15 @@ class SocketStore extends BaseStore {
   }
 
   addSocketListener(name, callback) {
-    this.on(name, callback);
+    this.addListener(name, callback);
   }
 
   removeSocketListener(name, callback) {
     this.removeListener(name, callback);
+  }
+
+  removeAllSocketListeners(name) {
+    this.removeAllListeners(name);
   }
 
   _createWebSocket() {

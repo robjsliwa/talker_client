@@ -3,6 +3,7 @@ import moment from 'moment';
 import SocketActions from '../actions/socket-actions';
 import SocketStore from '../stores/socket-store';
 import SocketConstants from '../constants/socket-constants';
+import UserNameDialog from './username-dialog';
 
 export default class Chat extends React.Component {
   constructor(props) {
@@ -20,15 +21,19 @@ export default class Chat extends React.Component {
   componentDidMount() {
     let currentUserName = localStorage.getItem('userName');
     if (currentUserName === null || SocketStore.isRoomReady === false) {
-      SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
+      //SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     } else {
       this._onRoomReady()
     }
+    SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
+    SocketStore.addSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
   }
 
   componentWillUnmount() {
     SocketStore.removeSocketListener(SocketConstants.SOCKET_ROOM_READY, this._onRoomReady.bind(this));
     SocketStore.removeSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
+    SocketStore.removeSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
+    SocketStore.removeSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
   }
 
   _onSocketOpen() {
@@ -48,6 +53,12 @@ export default class Chat extends React.Component {
     SocketActions.joinUserToRoom(currentUserName, currentUserID, this.props.params.roomname);
   }
 
+  _onSocketDisconnet() {
+    console.log('In _onSocketDisconnet');
+    SocketStore.removeAllSocketListeners(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE);
+    SocketStore.removeAllSocketListeners(SocketConstants.SOCKET_ROOM_READY);
+  }
+
   _onRoomReady() {
     //let currentUserName = localStorage.getItem('userName')
     //let currentUserID = localStorage.getItem('userID')
@@ -55,6 +66,7 @@ export default class Chat extends React.Component {
       userName: SocketStore.userName,
       userID: SocketStore.userID,
       roomName: this.props.params.roomname,
+      messages: [],
     });
     SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
   }
@@ -132,6 +144,7 @@ export default class Chat extends React.Component {
         </div>
         <div id="room-selection" className="col-xs-12 col-md-8">
           <h1>TODO: Video Area</h1>
+          <UserNameDialog />
         </div>
       </div>
     </div>

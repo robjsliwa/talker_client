@@ -9,6 +9,7 @@
   "author": "Rob Sliwa",
   "license": "MIT",
   "dependencies": {
+    "boron": "^0.2.3",
     "flux": "^2.1.1",
     "font-awesome": "^4.3.0",
     "keymirror": "^0.1.1",
@@ -16,7 +17,8 @@
     "moment": "^2.13.0",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
-    "react-router": "^2.4.1"
+    "react-router": "^2.4.1",
+    "reactify": "^1.1.1"
   },
   "devDependencies": {
     "aliasify": "^1.7.2",
