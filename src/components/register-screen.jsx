@@ -54,13 +54,35 @@ export default withRouter(class RegisterScreen extends React.Component {
     SocketActions.addUserToRoom(this.state.userName, this.state.roomName);
   }
 
+  _randomRegister() {
+    const roomName = this._getRandomAlphaNumeric(10);
+    this.setState({
+      roomName: roomName,
+    })
+  }
+
+  _getRandomAlphaNumeric(length) {
+    let value = "";
+    const lettersAndNumbers = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (let i = 0; i < length; i++) {
+        value += lettersAndNumbers.charAt(Math.floor(Math.random() * lettersAndNumbers.length));
+    }
+    return value;
+  }
+
   _validateRegistrationInput() {
     if (this.state.userName === "" || this.state.roomName === "") {
       this.setState({
         isError: true,
-      })
-
+      });
       return false
+    }
+
+    if (/\s/.test(this.state.roomName)) {
+      this.setState({
+        isError: true,
+      });
+      return false;
     }
 
     return true
@@ -77,7 +99,7 @@ export default withRouter(class RegisterScreen extends React.Component {
               type="text"
               id="room-id-input"
               autofocus
-              value={this.props.userName}
+              value={this.state.userName}
               onChange={this._onUserName.bind(this)}
             />
           </div>
@@ -89,14 +111,14 @@ export default withRouter(class RegisterScreen extends React.Component {
               type="text"
               id="room-id-input"
               autofocus
-              value={this.props.roomName}
+              value={this.state.roomName}
               onChange={this._onRoomName.bind(this)}
             />
-          <label className={!this.state.isError ? "error-label hidden" : "error-label"}  id="room-id-input-label">Type in room name or press Random to auto generate random room name.</label>
+          <label className={!this.state.isError ? "error-label hidden" : "error-label"}  id="room-id-input-label">Type in room name (no spaces) or press Random to auto generate random room name.</label>
           </div>
           <div id="room-id-input-buttons">
             <button id="join-button" onClick={this._register.bind(this)}>JOIN</button>
-          <button id="random-button">RANDOM</button>
+          <button id="random-button" onClick={this._randomRegister.bind(this)}>RANDOM</button>
           </div>
         </div>
         <div id="recent-rooms">
