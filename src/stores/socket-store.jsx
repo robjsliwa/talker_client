@@ -26,7 +26,8 @@ class SocketStore extends BaseStore {
   }
 
   _createWebSocket() {
-    this.ws = new WebSocket('ws://localhost:4652');
+    //this.ws = new WebSocket('ws://localhost:4652');
+    this.ws = new WebSocket('wss://st-irisvideochat-wcdcc-001.poc.sys.comcast.net/videochat-websocket');
     this.ws.onmessage = this._message.bind(this);
     this.ws.onopen = this._open.bind(this);
     this.ws.onclose = this._close.bind(this);

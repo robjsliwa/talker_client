@@ -70,18 +70,21 @@ export default class Chat extends React.Component {
       userName: SocketStore.userName,
       userID: SocketStore.userID,
       roomName: this.props.params.roomname,
-      messages: [],
+      //messages: [],
     });
     SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
   }
 
   _onReceivedMessage(message) {
+    const fromTag = this.state.userID === message.fromID ? 'self' : 'other';
+    console.log('fromTag: ' + fromTag);
     this.state.messages.push({
       from: message.from,
       fromID: message.fromID,
       text: message.text,
       textID: message.textID,
       timestamp: message.timestamp,
+      fromTag: fromTag,
     });
     console.log(message);
     this.forceUpdate();
@@ -115,7 +118,7 @@ export default class Chat extends React.Component {
           <section className="module">
             <ol id="message-scroll" className="text-conversation">
               {this.state.messages.map((message) => {
-                return <li className={this.state.userID === message.fromID ? "self" : "other"} key={message.textID}>
+                return <li className={message.fromTag === 'self' ? "self" : "other"} key={message.textID}>
                   <div className="avatar">
                   </div>
                   <div className="messages">
