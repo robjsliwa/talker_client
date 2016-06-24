@@ -18,7 +18,8 @@
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
     "react-router": "^2.4.1",
-    "reactify": "^1.1.1"
+    "reactify": "^1.1.1",
+    "whatwg-fetch": "^1.0.0"
   },
   "devDependencies": {
     "aliasify": "^1.7.2",

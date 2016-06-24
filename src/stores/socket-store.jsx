@@ -1,6 +1,7 @@
 import BaseStore from './base-store';
 import SocketConstants from '../constants/socket-constants';
 import AppDispatcher from '../dispatcher/app-dispatcher';
+import AuthApiController from '../api/auth-api';
 
 class SocketStore extends BaseStore {
   constructor() {
@@ -87,14 +88,27 @@ class SocketStore extends BaseStore {
           localStorage.setItem('userID', payload.data.user.id);
           localStorage.setItem('userName', payload.data.user.name);
           localStorage.setItem('roomName', payload.data.room.name);
-          this.isRoomReady = true;
-          this.emit(SocketConstants.SOCKET_ROOM_READY);
+          const authApi = new AuthApiController();
+          console.log('add room so login');
+          authApi.login(this.userID, this._onLoginSuccess.bind(this), this._onLoginFailure.bind(this));
         }
       }
     }
     catch (err) {
       this.emit(SocketConstants.SOCKET_ERROR, err)
     }
+  }
+
+  _onLoginSuccess(data) {
+    console.log('Login success!');
+    console.log(data);
+    this.isRoomReady = true;
+    this.emit(SocketConstants.SOCKET_ROOM_READY);
+  }
+
+  _onLoginFailure(error) {
+    console.log('Login failed');
+    console.log(error);
   }
 
   _open() {
