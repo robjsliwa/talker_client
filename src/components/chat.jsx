@@ -15,6 +15,7 @@ export default class Chat extends React.Component {
       userID: "",
       roomName: "",
       messages: [],
+      xrtcMgr: null,
     }
   }
 
@@ -73,6 +74,7 @@ export default class Chat extends React.Component {
       //messages: [],
     });
     SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
+    this._initializeWebRTC();
   }
 
   _onReceivedMessage(message) {
@@ -109,6 +111,41 @@ export default class Chat extends React.Component {
     this.setState({
       chatBox: "",
     });
+    this._connectWebRTC();
+  }
+
+  _initializeWebRTC() {
+    let userConfig = {
+      jid: this.state.userName,
+      traceId: "5993E6CC-6D6D-4C9B-BC48-C0B1F29FC234",
+      useEventManager: true,
+    }
+    let serverConfig = userConfig;
+    console.log("init SDK");
+    let xrtcSDK = new window.xrtcSDK(serverConfig);
+    this.setState({
+      xrtcMgr: xrtcSDK,
+    });
+
+    console.log(userConfig);
+    this.state.xrtcMgr.createReceiver(userConfig.jid);
+    this.state.xrtcMgr.create(userConfig, (result) => {
+      if (result) {
+        console.log(result);
+        console.log("start session");
+        this.state.xrtcMgr.createSession("VIDEO_CALL", ["toJid"], userConfig, this._onWebRTCConnect);
+      }
+      console.log("SDK create complete");
+    });
+  }
+
+  _connectWebRTC() {
+
+
+  }
+
+  _onWebRTCConnect(response) {
+    console.log(response);
   }
 
   render() {

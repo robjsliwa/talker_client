@@ -23,7 +23,7 @@ export default class AuthApiController {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-App-Key': 'jnGEEDOwLwbeCilz3K8ROxC4iU4Co9',
+        'X-App-Key': 'bJjeXEpiqXMBAJpuDr0ksg7pkUCQlNlV',
       },
       body: JSON.stringify({
         'UserID': userID,
