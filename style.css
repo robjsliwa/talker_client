@@ -95,6 +95,75 @@ input[type="username"].invalid {
   to {
     opacity: 0.5; } }
 
+#startb {
+  margin-left: 30%; }
+
+#connect, #share, #startb, #rec, #rConnect, #rShare {
+  background: green; }
+
+#hang {
+  background: red; }
+
+#sip {
+  font-size: 20px;
+  border-radius: 6px;
+  border: 1px solid #000; }
+
+#connect, #share, #mute, #hang, #dialb, #startb, #rec, #cameraStop, #rConnect, #rShare {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'Oswald';
+  font-size: 20px;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid #000; }
+
+#connect:hover {
+  border: none;
+  background: green;
+  box-shadow: 0px 0px 1px #777; }
+
+#hangup:hover {
+  border: none;
+  background: red;
+  box-shadow: 0px 0px 1px #777; }
+
+#sessionManager {
+  visibility: hidden; }
+
+#localvideo {
+  height: 80%;
+  width: 95%;
+  margin-top: 2%;
+  margin-left: 3%; }
+
+#localvideo * {
+  height: 100%;
+  width: 100%; }
+
+#remotevideo {
+  height: 100%;
+  width: 100%;
+  margin-top: 1%; }
+
+#remotevideo * {
+  height: 100%;
+  width: 100%; }
+
+.hidden {
+  display: none; }
+
+#notification {
+  float: right; }
+
+#notificationMsg {
+  font-size: 20px; }
+
+#rConnect, #rShare {
+  margin-left: 20px; }
+
 .hidden {
   display: none; }
 

@@ -15,7 +15,9 @@ export default class Chat extends React.Component {
       userID: "",
       roomName: "",
       messages: [],
-      xrtcMgr: null,
+      xrtcSDK: null,
+      userConfig: null,
+      notificationReceived: false,
     }
   }
 
@@ -111,32 +113,48 @@ export default class Chat extends React.Component {
     this.setState({
       chatBox: "",
     });
-    this._connectWebRTC();
   }
 
   _initializeWebRTC() {
     let userConfig = {
       jid: this.state.userName,
+      roomName: "testme@comcast.net",
       traceId: "5993E6CC-6D6D-4C9B-BC48-C0B1F29FC234",
       useEventManager: true,
+      callType: "VIDEO_CALL",
     }
     let serverConfig = userConfig;
     console.log("init SDK");
     let xrtcSDK = new window.xrtcSDK(serverConfig);
     this.setState({
-      xrtcMgr: xrtcSDK,
+      xrtcSDK: xrtcSDK,
+      userConfig: userConfig,
     });
 
     console.log(userConfig);
-    this.state.xrtcMgr.createReceiver(userConfig.jid);
-    this.state.xrtcMgr.create(userConfig, (result) => {
+    console.log("Create stuff");
+    xrtcSDK.createReceiver(userConfig.jid);
+    xrtcSDK.create(userConfig, (result) => {
       if (result) {
         console.log(result);
-        console.log("start session");
-        this.state.xrtcMgr.createSession("VIDEO_CALL", ["toJid"], userConfig, this._onWebRTCConnect);
       }
       console.log("SDK create complete");
     });
+
+    xrtcSDK.createSession(["toJid"], userConfig, this._onWebRTCConnect);
+
+    if (xrtcSDK != null) {
+      xrtcSDK.onLocalAudio = this._onLocalAudio;
+      xrtcSDK.onLocalVideo = this._onLocalVideo;
+      xrtcSDK.onSessionCreated = this._onSessionCreated;
+      xrtcSDK.onRemoteParticipantJoined = this._onRemoteParticipantJoined;
+      xrtcSDK.onSessionConnected = this._onSessionConnected;
+      xrtcSDK.onRemoteVideo = this._onRemoteVideo;
+      xrtcSDK.onRemoteParticipantLeft = this._onRemoteParticipantLeft;
+      xrtcSDK.onSessionEnded = this._onSessionEnded;
+      xrtcSDK.onConnectionError = this._onConnectionError;
+      xrtcSDK.onNotificationReceived = this._onNotificationReceived;
+    }
   }
 
   _connectWebRTC() {
@@ -145,7 +163,48 @@ export default class Chat extends React.Component {
   }
 
   _onWebRTCConnect(response) {
+    console.log('createSession callback');
     console.log(response);
+  }
+
+  _onLocalAudio() {
+    console.log('onLocalAudio');
+  }
+
+  _onLocalVideo() {
+    console.log('onLocalVideo');
+  }
+
+  _onSessionCreated() {
+    console.log('onSessionCreated');
+  }
+
+  _onRemoteParticipantJoined() {
+    console.log('onRemoteParticipantJoined');
+  }
+
+  _onSessionConnected() {
+    console.log('onSessionConnected');
+  }
+
+  _onRemoteVideo() {
+    console.log('onRemoteVideo');
+  }
+
+  _onRemoteParticipantLeft() {
+    console.log('onRemoteParticipantLeft');
+  }
+
+  _onSessionEnded() {
+    console.log('onSessionEnded');
+  }
+
+  _onConnectionError() {
+    console.log('onConnectionError');
+  }
+
+  _onNotificationReceived() {
+    console.log('onNotificationReceived');
   }
 
   render() {
@@ -187,7 +246,8 @@ export default class Chat extends React.Component {
           </section>
         </div>
         <div id="room-selection" className="col-xs-12 col-md-8">
-          <h1>TODO: Video Area</h1>
+          <div id="localvideo"></div>
+          <div id="remotevideo"></div>
           <UserNameDialog ref="usernamemodal" />
         </div>
       </div>
