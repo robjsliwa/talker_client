@@ -18,6 +18,8 @@ export default class Chat extends React.Component {
       xrtcSDK: null,
       userConfig: null,
       notificationReceived: false,
+      isAudioMuted: false,
+      isVideoMuted: false,
     }
 
     this.localTracks = [];
@@ -42,7 +44,7 @@ export default class Chat extends React.Component {
     SocketStore.removeSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
 
     if (this.state.xrtcSDK != null) {
-      //this.state.xrtcSDK.endSession();
+      this.state.xrtcSDK.endSession();
     }
   }
 
@@ -210,77 +212,73 @@ export default class Chat extends React.Component {
   _onRemoteVideo(sessionId, track) {
     console.log('onRemoteVideo ' + sessionId + ' track ' + track);
 
-    var participant = track.getParticipantId();
+    let participant = track.getParticipantId();
     if (!this.remoteTracks[participant])
         this.remoteTracks[participant] = [];
-    var idx = this.remoteTracks[participant].push(track);
-    var id = participant.replace(/(-.*$)|(@.*$)/,'') + track.getType();
+    let idx = this.remoteTracks[participant].push(track);
+    let id = participant.replace(/(-.*$)|(@.*$)/,'') + track.getType();
 
-    console.log('onRemoteVideo before check');
     if (track.getType() == "video") {
-      console.log('in video');
         $("#remotevideo").append(
             "<video autoplay='1' id='" + id +  "' />");
     } else {
-      console.log('in video 2');
         $("#remotevideo").append(
             "<audio autoplay='1' id='" + id +  "' />");
     }
 
     track.attach($("#" + id)[0]);
-    //this._updateCssOnRemoteVideo();
+  }
 
-    if(Object.keys(remoteTracks).length > 1)
-    {
-        this._updateCssOnRemoteVideo1(Object.keys(remoteTracks).length);
+  _onRemoteParticipantLeft(id) {
+    console.log('onRemoteParticipantLeft: ' + id);
+    if (!this.remoteTracks[id]) {
+      return;
     }
+
+    let tracks = this.remoteTracks[id];
+    for (let i = 0; i < tracks.length; i++) {
+      tracks[i].detach($("#" + id.replace(/(-.*$)|(@.*$)/,'') + tracks[i].getType())[0]);
+    }
+
+    // endSession?
   }
 
-  _updateCssOnRemoteVideo()
-  {
-      var localVideo = document.getElementById("localvideo")
-      localVideo.style.height="25%";
-      localVideo.style.width="25%"
-      localVideo.style.position="fixed";
-      localVideo.style.marginTop="2%";
-      localVideo.style.marginLeft="3%";
-      localVideo.style.zIndex="2";
-
+  _onSessionEnded(sessionId) {
+    console.log('onSessionEnded: ' + sessionId);
   }
 
-  _updateCssOnRemoteVideo1(length)
-  {
-      var remoteVideo1 = document.getElementById("remotevideo");
-      //remoteVideo1.style.height="50%";
-      //remoteVideo1.style.width="50%";
-      remoteVideo1.style.height=remoteVideo1.style.height/length;
-      remoteVideo1.style.width=remoteVideo1.style.width/length;
-      remoteVideo1.style.marginTop="2%";
-      remoteVideo1.style.marginLeft="10%";
-  }
-
-  _onRemoteParticipantLeft() {
-    console.log('onRemoteParticipantLeft');
-  }
-
-  _onSessionEnded() {
-    console.log('onSessionEnded');
-  }
-
-  _onConnectionError() {
-    console.log('onConnectionError');
+  _onConnectionError(sessionId) {
+    console.log('onConnectionError: ' + sessionId);
   }
 
   _onNotificationReceived() {
     console.log('onNotificationReceived');
   }
 
-  _onMicrophoneMute() {
+  _onAudioMute() {
+    const isMuted = !this.state.isAudioMuted;
+    this.setState({
+      isAudioMuted: isMuted,
+    });
 
+    this.state.xrtcSDK.audioMuteUnmute(isMuted, (response) => {
+      if (!response) {
+        console.log("Local audio mute/unmute failed");
+      }
+    });
   }
 
   _onVideoMute() {
+    const isMuted = !this.state.isVideoMuted;
+    this.setState({
+      isVideoMuted: isMuted,
+    });
 
+    this.state.xrtcSDK.videoMuteUnmute(isMuted, (response) => {
+      if (!response) {
+        console.log("Local audio mute/unmute failed");
+      }
+    });
   }
 
   _onStopCall() {
@@ -327,12 +325,18 @@ export default class Chat extends React.Component {
         </div>
         <div className="col-xs-12 col-md-8">
           <div id="room-id-input-buttons">
-            <button id="join-button" onClick={this._onMicrophoneMute.bind(this)}><i className="fa fa-microphone fa-2x" aria-hidden="true"></i></button>
-            <button id="join-button" onClick={this._onVideoMute.bind(this)}><i className="fa fa-video-camera fa-2x" aria-hidden="true"></i></button>
+            <button id="join-button" onClick={this._onAudioMute.bind(this)}>{this.state.isAudioMuted ? <i className="fa fa-microphone-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-microphone fa-2x" aria-hidden="true"></i>}</button>
+            <button id="join-button" onClick={this._onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
             <button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
           </div>
-          <div id="localvideo"></div>
-          <div id="remotevideo"></div>
+          <div className="wrap">
+            <div className="box">
+              <div id="localvideo" className="boxInner"></div>
+            </div>
+            <div className="box">
+              <div id="remotevideo" className="boxInner"></div>
+            </div>
+          </div>
           <UserNameDialog ref="usernamemodal" />
         </div>
       </div>

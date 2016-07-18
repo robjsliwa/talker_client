@@ -1,5 +1,5 @@
 .module {
-  width: 300px;
+  width: 250px;
   margin: 0 0; }
 
 .text-conversation {
@@ -133,25 +133,6 @@ input[type="username"].invalid {
 #sessionManager {
   visibility: hidden; }
 
-#localvideo {
-  height: 100%;
-  width: 100%;
-  margin-top: 2%;
-  margin-left: 3%; }
-
-#localvideo * {
-  height: 100%;
-  width: 100%; }
-
-#remotevideo {
-  height: 100%;
-  width: 100%;
-  margin-top: 1%; }
-
-#remotevideo * {
-  height: 100%;
-  width: 100%; }
-
 .hidden {
   display: none; }
 
@@ -163,6 +144,28 @@ input[type="username"].invalid {
 
 #rConnect, #rShare {
   margin-left: 20px; }
+
+.wrap {
+  overflow: hidden;
+  margin: 10px; }
+
+.box {
+  float: left;
+  position: relative;
+  width: 50%;
+  padding-bottom: 50%; }
+
+.boxInner {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  bottom: 10px;
+  overflow: hidden; }
+
+video {
+  width: 100%;
+  height: auto; }
 
 .hidden {
   display: none; }
