@@ -40,6 +40,10 @@ export default class Chat extends React.Component {
     SocketStore.removeSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
     SocketStore.removeSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     SocketStore.removeSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
+
+    if (this.state.xrtcSDK != null) {
+      //this.state.xrtcSDK.endSession();
+    }
   }
 
   _onSocketOpen() {
@@ -147,22 +151,17 @@ export default class Chat extends React.Component {
     xrtcSDK.createSession([], userConfig, this._onWebRTCConnect);
 
     if (xrtcSDK != null) {
-      xrtcSDK.onLocalAudio = this._onLocalAudio;
+      xrtcSDK.onLocalAudio = this._onLocalAudio.bind(this);
       xrtcSDK.onLocalVideo = this._onLocalVideo.bind(this);
-      xrtcSDK.onSessionCreated = this._onSessionCreated;
-      xrtcSDK.onRemoteParticipantJoined = this._onRemoteParticipantJoined;
-      xrtcSDK.onSessionConnected = this._onSessionConnected;
+      xrtcSDK.onSessionCreated = this._onSessionCreated.bind(this);
+      xrtcSDK.onRemoteParticipantJoined = this._onRemoteParticipantJoined.bind(this);
+      xrtcSDK.onSessionConnected = this._onSessionConnected.bind(this);
       xrtcSDK.onRemoteVideo = this._onRemoteVideo.bind(this);
-      xrtcSDK.onRemoteParticipantLeft = this._onRemoteParticipantLeft;
-      xrtcSDK.onSessionEnded = this._onSessionEnded;
-      xrtcSDK.onConnectionError = this._onConnectionError;
-      xrtcSDK.onNotificationReceived = this._onNotificationReceived;
+      xrtcSDK.onRemoteParticipantLeft = this._onRemoteParticipantLeft.bind(this);
+      xrtcSDK.onSessionEnded = this._onSessionEnded.bind(this);
+      xrtcSDK.onConnectionError = this._onConnectionError.bind(this);
+      xrtcSDK.onNotificationReceived = this._onNotificationReceived.bind(this);
     }
-  }
-
-  _connectWebRTC() {
-
-
   }
 
   _onWebRTCConnect(response) {
@@ -229,11 +228,11 @@ export default class Chat extends React.Component {
     }
 
     track.attach($("#" + id)[0]);
-    this._updateCssOnRemoteVideo();
+    //this._updateCssOnRemoteVideo();
 
-    if(Object.keys(remoteTracks).length==2)
+    if(Object.keys(remoteTracks).length > 1)
     {
-        this._updateCssOnRemoteVideo1();
+        this._updateCssOnRemoteVideo1(Object.keys(remoteTracks).length);
     }
   }
 
@@ -249,11 +248,13 @@ export default class Chat extends React.Component {
 
   }
 
-  _updateCssOnRemoteVideo1()
+  _updateCssOnRemoteVideo1(length)
   {
       var remoteVideo1 = document.getElementById("remotevideo");
-      remoteVideo1.style.height="50%";
-      remoteVideo1.style.width="50%";
+      //remoteVideo1.style.height="50%";
+      //remoteVideo1.style.width="50%";
+      remoteVideo1.style.height=remoteVideo1.style.height/length;
+      remoteVideo1.style.width=remoteVideo1.style.width/length;
       remoteVideo1.style.marginTop="2%";
       remoteVideo1.style.marginLeft="10%";
   }
@@ -272,6 +273,18 @@ export default class Chat extends React.Component {
 
   _onNotificationReceived() {
     console.log('onNotificationReceived');
+  }
+
+  _onMicrophoneMute() {
+
+  }
+
+  _onVideoMute() {
+
+  }
+
+  _onStopCall() {
+
   }
 
   render() {
@@ -313,6 +326,11 @@ export default class Chat extends React.Component {
           </section>
         </div>
         <div className="col-xs-12 col-md-8">
+          <div id="room-id-input-buttons">
+            <button id="join-button" onClick={this._onMicrophoneMute.bind(this)}><i className="fa fa-microphone fa-2x" aria-hidden="true"></i></button>
+            <button id="join-button" onClick={this._onVideoMute.bind(this)}><i className="fa fa-video-camera fa-2x" aria-hidden="true"></i></button>
+            <button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
+          </div>
           <div id="localvideo"></div>
           <div id="remotevideo"></div>
           <UserNameDialog ref="usernamemodal" />
