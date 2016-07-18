@@ -21,6 +21,7 @@ export default class Chat extends React.Component {
     }
 
     this.localTracks = [];
+    this.remoteTracks = [];
   }
 
   componentDidMount() {
@@ -121,11 +122,10 @@ export default class Chat extends React.Component {
     let userConfig = {
       jid: this.state.userName + '@share.comcast.net',
       password: '',
-      roomName: 'room@share.comcast.net',
-      //to: this.state.roomName + '@share.comcast.net',
+      roomName: this.state.roomName + '@share.comcast.net',
       traceId: "5993E6CC-6D6D-4C9B-BC48-C0B1F29FC234",
       useEventManager: true,
-      callType: "VIDEO_CALL",
+      call_type: "VIDEO_CALL",
     }
     let serverConfig = userConfig;
     console.log("init SDK");
@@ -136,7 +136,7 @@ export default class Chat extends React.Component {
     });
 
     console.log(userConfig);
-    console.log("Create stuff");
+
     xrtcSDK.createReceiver(userConfig.jid);
     xrtcSDK.create(userConfig, (result) => {
       if (result) {
@@ -144,23 +144,20 @@ export default class Chat extends React.Component {
       }
       console.log("SDK create complete");
     });
-
     xrtcSDK.createSession([], userConfig, this._onWebRTCConnect);
 
     if (xrtcSDK != null) {
       xrtcSDK.onLocalAudio = this._onLocalAudio;
-      xrtcSDK.onLocalVideo = this._onLocalVideo;
+      xrtcSDK.onLocalVideo = this._onLocalVideo.bind(this);
       xrtcSDK.onSessionCreated = this._onSessionCreated;
       xrtcSDK.onRemoteParticipantJoined = this._onRemoteParticipantJoined;
       xrtcSDK.onSessionConnected = this._onSessionConnected;
-      xrtcSDK.onRemoteVideo = this._onRemoteVideo;
+      xrtcSDK.onRemoteVideo = this._onRemoteVideo.bind(this);
       xrtcSDK.onRemoteParticipantLeft = this._onRemoteParticipantLeft;
       xrtcSDK.onSessionEnded = this._onSessionEnded;
       xrtcSDK.onConnectionError = this._onConnectionError;
       xrtcSDK.onNotificationReceived = this._onNotificationReceived;
     }
-
-    //xrtcSDK.startLocalVideo();
   }
 
   _connectWebRTC() {
@@ -180,7 +177,7 @@ export default class Chat extends React.Component {
   _onLocalVideo(sessionId, tracks) {
     console.log('onLocalVideo');
     console.log(sessionId);
-    console.log(tracks)
+    console.log(tracks);
 
     this.localTracks = tracks;
 
@@ -195,12 +192,12 @@ export default class Chat extends React.Component {
                 "' />");
             this.localTracks[i].attach($("#localAudio" + i)[0]);
         }
-        sdk_obj.addTrack(this.localTracks[i]);
+        this.state.xrtcSDK.addTrack(this.localTracks[i]);
       }
   }
 
-  _onSessionCreated() {
-    console.log('onSessionCreated');
+  _onSessionCreated(sessionId, roomName) {
+    console.log('onSessionCreated - session created with ' + sessionId + ' and user joined in ' + roomName);
   }
 
   _onRemoteParticipantJoined() {
@@ -211,8 +208,54 @@ export default class Chat extends React.Component {
     console.log('onSessionConnected');
   }
 
-  _onRemoteVideo() {
-    console.log('onRemoteVideo');
+  _onRemoteVideo(sessionId, track) {
+    console.log('onRemoteVideo ' + sessionId + ' track ' + track);
+
+    var participant = track.getParticipantId();
+    if (!this.remoteTracks[participant])
+        this.remoteTracks[participant] = [];
+    var idx = this.remoteTracks[participant].push(track);
+    var id = participant.replace(/(-.*$)|(@.*$)/,'') + track.getType();
+
+    console.log('onRemoteVideo before check');
+    if (track.getType() == "video") {
+      console.log('in video');
+        $("#remotevideo").append(
+            "<video autoplay='1' id='" + id +  "' />");
+    } else {
+      console.log('in video 2');
+        $("#remotevideo").append(
+            "<audio autoplay='1' id='" + id +  "' />");
+    }
+
+    track.attach($("#" + id)[0]);
+    this._updateCssOnRemoteVideo();
+
+    if(Object.keys(remoteTracks).length==2)
+    {
+        this._updateCssOnRemoteVideo1();
+    }
+  }
+
+  _updateCssOnRemoteVideo()
+  {
+      var localVideo = document.getElementById("localvideo")
+      localVideo.style.height="25%";
+      localVideo.style.width="25%"
+      localVideo.style.position="fixed";
+      localVideo.style.marginTop="2%";
+      localVideo.style.marginLeft="3%";
+      localVideo.style.zIndex="2";
+
+  }
+
+  _updateCssOnRemoteVideo1()
+  {
+      var remoteVideo1 = document.getElementById("remotevideo");
+      remoteVideo1.style.height="50%";
+      remoteVideo1.style.width="50%";
+      remoteVideo1.style.marginTop="2%";
+      remoteVideo1.style.marginLeft="10%";
   }
 
   _onRemoteParticipantLeft() {
@@ -269,7 +312,7 @@ export default class Chat extends React.Component {
             </div>
           </section>
         </div>
-        <div id="room-selection" className="col-xs-12 col-md-8">
+        <div className="col-xs-12 col-md-8">
           <div id="localvideo"></div>
           <div id="remotevideo"></div>
           <UserNameDialog ref="usernamemodal" />
