@@ -19,6 +19,8 @@ export default class Chat extends React.Component {
       userConfig: null,
       notificationReceived: false,
     }
+
+    this.localTracks = [];
   }
 
   componentDidMount() {
@@ -117,8 +119,10 @@ export default class Chat extends React.Component {
 
   _initializeWebRTC() {
     let userConfig = {
-      jid: this.state.userName,
-      roomName: "testme@comcast.net",
+      jid: this.state.userName + '@share.comcast.net',
+      password: '',
+      roomName: 'room@share.comcast.net',
+      //to: this.state.roomName + '@share.comcast.net',
       traceId: "5993E6CC-6D6D-4C9B-BC48-C0B1F29FC234",
       useEventManager: true,
       callType: "VIDEO_CALL",
@@ -141,7 +145,7 @@ export default class Chat extends React.Component {
       console.log("SDK create complete");
     });
 
-    xrtcSDK.createSession(["toJid"], userConfig, this._onWebRTCConnect);
+    xrtcSDK.createSession([], userConfig, this._onWebRTCConnect);
 
     if (xrtcSDK != null) {
       xrtcSDK.onLocalAudio = this._onLocalAudio;
@@ -155,6 +159,8 @@ export default class Chat extends React.Component {
       xrtcSDK.onConnectionError = this._onConnectionError;
       xrtcSDK.onNotificationReceived = this._onNotificationReceived;
     }
+
+    //xrtcSDK.startLocalVideo();
   }
 
   _connectWebRTC() {
@@ -171,8 +177,26 @@ export default class Chat extends React.Component {
     console.log('onLocalAudio');
   }
 
-  _onLocalVideo() {
+  _onLocalVideo(sessionId, tracks) {
     console.log('onLocalVideo');
+    console.log(sessionId);
+    console.log(tracks)
+
+    this.localTracks = tracks;
+
+    for (let i = 0; i < this.localTracks.length; i++) {
+        if (this.localTracks[i].getType() == "video") {
+            $("#localvideo").append(
+                "<video autoplay='1' id='localVideo" + i + "' />");
+            this.localTracks[i].attach($("#localVideo" + i)[0]);
+        } else {
+            $("#localvideo").append(
+                "<audio autoplay='1' muted='true' id='localAudio" + i +
+                "' />");
+            this.localTracks[i].attach($("#localAudio" + i)[0]);
+        }
+        sdk_obj.addTrack(this.localTracks[i]);
+      }
   }
 
   _onSessionCreated() {
