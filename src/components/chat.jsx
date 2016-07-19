@@ -285,6 +285,20 @@ export default class Chat extends React.Component {
 
   }
 
+/*
+<div className="wrap">
+  <div className="box">
+    <div id="localvideo" className="boxInner"></div>
+  </div>
+  <div className="box">
+    <div id="remotevideo" className="boxInner"></div>
+  </div>
+</div>
+
+<div id="localvideo"></div>
+<div id="remotevideo"></div>
+*/
+
   render() {
     return <div className="container-fluid">
       <div className="row">
@@ -333,7 +347,7 @@ export default class Chat extends React.Component {
             <div className="box">
               <div id="localvideo" className="boxInner"></div>
             </div>
-            <div className="box">
+            <div id="remotevideo" className="box">
               <div id="remotevideo" className="boxInner"></div>
             </div>
           </div>
