@@ -83,9 +83,12 @@ export default class Chat extends React.Component {
       userID: SocketStore.userID,
       roomName: this.props.params.roomname,
       //messages: [],
-    });
-    SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
-    this._initializeWebRTC();
+    },
+    () => {
+      SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
+      this._initializeWebRTC();
+    }
+    );
   }
 
   _onReceivedMessage(message) {
@@ -125,6 +128,7 @@ export default class Chat extends React.Component {
   }
 
   _initializeWebRTC() {
+    console.log('CHECK: ' + this.state.userName);
     let userConfig = {
       jid: this.state.userName + '@share.comcast.net',
       password: '',
@@ -344,7 +348,7 @@ export default class Chat extends React.Component {
             <button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
           </div>
           <div className="wrap">
-            <div className="box">
+            <div id="localvideo" className="box">
               <div id="localvideo" className="boxInner"></div>
             </div>
             <div id="remotevideo" className="box">
