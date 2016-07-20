@@ -1,7 +1,7 @@
 import BaseStore from './base-store';
 import SocketConstants from '../constants/socket-constants';
 import AppDispatcher from '../dispatcher/app-dispatcher';
-import AuthApiController from '../api/auth-api';
+import { AuthManager } from 'iris-auth-js-sdk';
 
 class SocketStore extends BaseStore {
   constructor() {
@@ -12,6 +12,9 @@ class SocketStore extends BaseStore {
     this.userName = "";
     this.userID = "";
     this.roomName = "";
+    this.authApi = new AuthManager({"managementApiUrl": "https://iris.xrtc.me/", "appKey": "bJjeXEpiqXMBAJpuDr0ksg7pkUCQlNlV"});
+    this.decodedToken = null;
+    this.accessToken = null;
   }
 
   addSocketListener(name, callback) {
@@ -88,9 +91,8 @@ class SocketStore extends BaseStore {
           localStorage.setItem('userID', payload.data.user.id);
           localStorage.setItem('userName', payload.data.user.name);
           localStorage.setItem('roomName', payload.data.room.name);
-          const authApi = new AuthApiController();
           console.log('add room so login');
-          authApi.login(this.userID, this._onLoginSuccess.bind(this), this._onLoginFailure.bind(this));
+          this.authApi.anonymousLogin(this.userID, this._onLoginSuccess.bind(this), this._onLoginFailure.bind(this));
         }
       }
     }
@@ -102,6 +104,9 @@ class SocketStore extends BaseStore {
   _onLoginSuccess(data) {
     console.log('Login success!');
     console.log(data);
+    this.accessToken = data.Token;
+    this.decodedToken = this.authApi.decodeToken(data.Token);
+    console.log(this.decodedToken);
     this.isRoomReady = true;
     this.emit(SocketConstants.SOCKET_ROOM_READY);
   }
@@ -193,6 +198,14 @@ class SocketStore extends BaseStore {
 
   get isSocketConnected() {
     return this.isConnected;
+  }
+
+  get domain() {
+    return this.decodedToken.payload["domain"];
+  }
+
+  get token() {
+    return this.accessToken;
   }
 }
 

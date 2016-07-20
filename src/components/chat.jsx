@@ -130,12 +130,15 @@ export default class Chat extends React.Component {
   _initializeWebRTC() {
     console.log('CHECK: ' + this.state.userName);
     let userConfig = {
-      jid: this.state.userName + '@share.comcast.net',
+      jid: this.state.userName + SocketStore.domain,
       password: '',
-      roomName: this.state.roomName + '@share.comcast.net',
+      roomName: this.state.roomName + SocketStore.domain,
+      domain: SocketStore.domain,
+      token: SocketStore.token,
       traceId: "5993E6CC-6D6D-4C9B-BC48-C0B1F29FC234",
       useEventManager: true,
-      call_type: "VIDEO_CALL",
+      callType: "videocall",
+      loginType: "connect",
     }
     let serverConfig = userConfig;
     console.log("init SDK");
