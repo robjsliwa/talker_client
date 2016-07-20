@@ -24,6 +24,7 @@ export default class Chat extends React.Component {
 
     this.localTracks = [];
     this.remoteTracks = [];
+    this.videoTagCounter=0;
   }
 
   componentDidMount() {
@@ -226,8 +227,16 @@ export default class Chat extends React.Component {
     let id = participant.replace(/(-.*$)|(@.*$)/,'') + track.getType();
 
     if (track.getType() == "video") {
+      if (this.videoTagCounter%2 == 0)
+      {
         $("#remotevideo").append(
             "<video autoplay='1' id='" + id +  "' />");
+      }
+      else {
+        $("#localvideo").append(
+            "<video autoplay='1' id='" + id +  "' />");
+      }
+      this.videoTagCounter++;
     } else {
         $("#remotevideo").append(
             "<audio autoplay='1' id='" + id +  "' />");
@@ -238,6 +247,7 @@ export default class Chat extends React.Component {
 
   _onRemoteParticipantLeft(id) {
     console.log('onRemoteParticipantLeft: ' + id);
+    console.log($("#remotevideo"));
     if (!this.remoteTracks[id]) {
       return;
     }
@@ -246,8 +256,6 @@ export default class Chat extends React.Component {
     for (let i = 0; i < tracks.length; i++) {
       tracks[i].detach($("#" + id.replace(/(-.*$)|(@.*$)/,'') + tracks[i].getType())[0]);
     }
-
-    // endSession?
   }
 
   _onSessionEnded(sessionId) {
@@ -298,6 +306,15 @@ export default class Chat extends React.Component {
     <div id="localvideo" className="boxInner"></div>
   </div>
   <div className="box">
+    <div id="remotevideo" className="boxInner"></div>
+  </div>
+</div>
+
+<div className="wrap">
+  <div id="localvideo" className="box">
+    <div id="localvideo" className="boxInner"></div>
+  </div>
+  <div id="remotevideo" className="box">
     <div id="remotevideo" className="boxInner"></div>
   </div>
 </div>
