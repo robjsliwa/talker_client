@@ -321,12 +321,14 @@ export default class Chat extends React.Component {
 
 <div id="localvideo"></div>
 <div id="remotevideo"></div>
+
+<button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
 */
 
   render() {
     return <div className="container-fluid">
       <div className="row">
-        <div className="col-xs-6 col-md-4">
+        <div className="col-xs-4 col-md-3">
           <section className="module">
             <ol id="message-scroll" className="text-conversation">
               {this.state.messages.map((message) => {
@@ -361,11 +363,10 @@ export default class Chat extends React.Component {
             </div>
           </section>
         </div>
-        <div className="col-xs-12 col-md-8">
-          <div id="room-id-input-buttons">
+        <div className="col-xs-14 col-md-9">
+          <div className="button-center" id="room-id-input-buttons">
             <button id="join-button" onClick={this._onAudioMute.bind(this)}>{this.state.isAudioMuted ? <i className="fa fa-microphone-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-microphone fa-2x" aria-hidden="true"></i>}</button>
             <button id="join-button" onClick={this._onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
-            <button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
           </div>
           <div className="wrap">
             <div id="localvideo" className="box">

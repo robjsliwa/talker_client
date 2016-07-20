@@ -1,14 +1,14 @@
 .module {
   width: 250px;
-  margin: 0 0;
+  margin: 80px 0;
 }
 
 .text-conversation {
   list-style: none;
   background: #333333;
   padding: 0 0 50px 0;
-  max-height: 87vh;
-  min-height: 87vh;
+  max-height: 65vh;
+  min-height: 65vh;
   overflow: scroll;
   li {
     padding: 0.5rem;
@@ -220,19 +220,27 @@ margin-left:20px;
    float: left;
    position: relative;
    width: 50%;
-   padding-bottom: 50%;
+   padding-bottom: 30%;
+   padding-left: 4px;
+   padding-right: 4px;
 }
 .boxInner {
    position: absolute;
-   left: 10px;
-   right: 10px;
-   top: 10px;
-   bottom: 10px;
+   left: 0px;
+   right: 0px;
+   top: 0px;
+   bottom: 0px;
    overflow: hidden;
+   //border-style: solid;
+   //border-width: thin;
    //background-color: #000000;
 }
 
 video {
   width: 100%;
   height: auto;
+}
+
+.button-center {
+  text-align: center;
 }
