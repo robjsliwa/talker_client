@@ -4,6 +4,7 @@ import SocketActions from '../actions/socket-actions';
 import SocketStore from '../stores/socket-store';
 import SocketConstants from '../constants/socket-constants';
 import UserNameDialog from './username-dialog';
+import Pictionary from './pictionary';
 
 export default class Chat extends React.Component {
   constructor(props) {
@@ -49,6 +50,10 @@ export default class Chat extends React.Component {
     }
   }
 
+  _onImageLoad() {
+    console.log("loaded image");
+  }
+
   _onSocketOpen() {
     let currentUserName = localStorage.getItem('userName');
     let currentUserID = localStorage.getItem('userID');
@@ -88,8 +93,7 @@ export default class Chat extends React.Component {
     () => {
       SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
       this._initializeWebRTC();
-    }
-    );
+    });
   }
 
   _onReceivedMessage(message) {
@@ -361,20 +365,13 @@ export default class Chat extends React.Component {
             </div>
           </section>
         </div>
-        <div className="col-xs-12 col-md-8">
+        <div ref="pictholder" className="col-xs-12 col-md-8">
           <div id="room-id-input-buttons">
             <button id="join-button" onClick={this._onAudioMute.bind(this)}>{this.state.isAudioMuted ? <i className="fa fa-microphone-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-microphone fa-2x" aria-hidden="true"></i>}</button>
             <button id="join-button" onClick={this._onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
             <button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
           </div>
-          <div className="wrap">
-            <div id="localvideo" className="box">
-              <div id="localvideo" className="boxInner"></div>
-            </div>
-            <div id="remotevideo" className="box">
-              <div id="remotevideo" className="boxInner"></div>
-            </div>
-          </div>
+          <Pictionary />
           <UserNameDialog ref="usernamemodal" />
         </div>
       </div>
