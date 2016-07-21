@@ -26,10 +26,30 @@ export default class Chat extends React.Component {
     this.localTracks = [];
     this.remoteTracks = [];
     this.videoTagCounter=0;
+    this.birdAssets = ['img/Bird_Red_1.png',
+                  'img/Bird_Red_2.png',
+                  'img/Bird_Red_3.png',
+                  'img/Bird_Red_4.png',
+                  'img/Bird_Red_5.png',
+                  'img/Bird_Red_6.png',
+                  'img/Bird_Red_7.png',
+                  'img/Bird_Red_8.png',
+                  'img/Bird_Red_9.png',
+                  'img/Bird_Red_10.png',
+                  'img/Bird_Red_11.png',
+                  'img/Bird_Red_12.png',
+                  'img/Bird_Red_13.png',
+                  'img/Bird_Red_14.png',
+                  'img/Bird_Red_15.png',
+                  'img/Bird_Red_16.png',
+                  'img/Bird_Red_17.png',
+                  'img/Bird_Red_18.png'
+                 ];
+    this.currentImage = 0;
+    this.imageToDisplay = null;
   }
 
   componentDidMount() {
-    localStorage.setItem('userName', 'X1');
     let currentUserName = localStorage.getItem('userName');
     if (currentUserName === null || SocketStore.isRoomReady === false) {
       //SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
@@ -38,6 +58,11 @@ export default class Chat extends React.Component {
     }
     SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     SocketStore.addSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
+
+    /*setInterval(() => {
+      console.log('simload call');
+      this._simulateOnDataImage();
+    }, 1000);*/
   }
 
   componentWillUnmount() {
@@ -193,7 +218,7 @@ export default class Chat extends React.Component {
     console.log(sessionId);
     console.log(tracks);
 
-    /*this.localTracks = tracks;
+    this.localTracks = tracks;
 
     for (let i = 0; i < this.localTracks.length; i++) {
         if (this.localTracks[i].getType() == "video") {
@@ -207,7 +232,7 @@ export default class Chat extends React.Component {
             this.localTracks[i].attach($("#localAudio" + i)[0]);
         }
         this.state.xrtcSDK.addTrack(this.localTracks[i]);
-      }*/
+      }
   }
 
   _onSessionCreated(sessionId, roomName) {
@@ -225,7 +250,7 @@ export default class Chat extends React.Component {
   _onRemoteVideo(sessionId, track) {
     console.log('onRemoteVideo ' + sessionId + ' track ' + track);
 
-    /*let participant = track.getParticipantId();
+    let participant = track.getParticipantId();
     if (!this.remoteTracks[participant])
         this.remoteTracks[participant] = [];
     let idx = this.remoteTracks[participant].push(track);
@@ -247,7 +272,7 @@ export default class Chat extends React.Component {
             "<audio autoplay='1' id='" + id +  "' />");
     }
 
-    track.attach($("#" + id)[0]);*/
+    track.attach($("#" + id)[0]);
   }
 
   _onRemoteParticipantLeft(id) {
@@ -305,6 +330,41 @@ export default class Chat extends React.Component {
 
   }
 
+  _getDataUri(canvas, url, callback) {
+    let image = new Image();
+
+    image.onload = function () {
+        //let canvas = this.refs.rendercanvas;
+        canvas.width = this.naturalWidth; // or 'width' if you want a special/scaled size
+        canvas.height = this.naturalHeight; // or 'height' if you want a special/scaled size
+
+        canvas.getContext('2d').drawImage(image, 0, 0);
+
+        // Get raw image data
+        callback(canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/, ''));
+
+        // ... or get as Data URI
+        //callback(canvas.toDataURL('image/png'));
+    };
+
+    image.src = url;
+  }
+
+  _simulateOnDataImage() {
+    console.log('simulateOnDataImage');
+
+    this._getDataUri(this.refs.rendercanvas, this.birdAssets[this.currentImage], (dataUri) => {
+      this.imageToDisplay = dataUri;
+      this._onDataImage();
+    });
+    this.currentImage = (this.currentImage + 1) % this.birdAssets.length;
+  }
+
+  _onDataImage() {
+    console.log('forceUpdate');
+    this.forceUpdate();
+  }
+
 /*
 <div className="wrap">
   <div className="box">
@@ -321,6 +381,12 @@ export default class Chat extends React.Component {
   </div>
   <div id="remotevideo" className="box">
     <div id="remotevideo" className="boxInner"></div>
+  </div>
+</div>
+
+<div className="wrap">
+  <div className="box">
+    <Pictionary className="boxInner" image={this.imageToDisplay} />
   </div>
 </div>
 
@@ -368,13 +434,17 @@ export default class Chat extends React.Component {
         </div>
         <div ref="pictholder" className="col-xs-12 col-md-8">
           <div className="wrap">
-            <div className="box">
-              <Pictionary className="boxInner" />
+            <div id="localvideo" className="box">
+              <div id="localvideo" className="boxInner"></div>
+            </div>
+            <div id="remotevideo" className="box">
+              <div id="remotevideo" className="boxInner"></div>
             </div>
           </div>
           <UserNameDialog ref="usernamemodal" />
         </div>
       </div>
+      <canvas ref="rendercanvas" />
     </div>
   }
 }
