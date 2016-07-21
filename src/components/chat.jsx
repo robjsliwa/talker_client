@@ -29,7 +29,8 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount() {
-    let currentUserName = 'X1'; //localStorage.getItem('userName');
+    localStorage.setItem('userName', 'X1');
+    let currentUserName = localStorage.getItem('userName');
     if (currentUserName === null || SocketStore.isRoomReady === false) {
       //SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     } else {

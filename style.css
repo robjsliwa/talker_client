@@ -20,6 +20,9 @@
       display: block;
       width: 100%; }
 
+.text-conversation::-webkit-scrollbar {
+  display: none; }
+
 .other .avatar:after {
   content: "";
   position: absolute;
