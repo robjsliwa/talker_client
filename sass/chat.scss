@@ -219,8 +219,12 @@ margin-left:20px;
 .box {
    float: left;
    position: relative;
-   width: 50%;
-   padding-bottom: 50%;
+   width: 100%;
+   max-height: 87vh;
+   min-height: 87vh;
+   //padding-bottom: 50%;
+   border-style: solid;
+   border-width: thin;
 }
 .boxInner {
    position: absolute;

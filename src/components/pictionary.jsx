@@ -45,6 +45,10 @@ export default class Pictionary extends React.Component {
       birdImage.src = this.birdAssets[index];
       this.frames.push(birdImage);
     }
+    this.refs.pictcanvas.style.width = '100%';
+    this.refs.pictcanvas.style.height = '100%';
+    this.refs.pictcanvas.width = this.refs.pictcanvas.offsetWidth;
+    this.refs.pictcanvas.height = this.refs.pictcanvas.offsetHeight;
     this.ctx = this.refs.pictcanvas.getContext('2d');
     setInterval(() => {
       this._updateCanvas();
@@ -62,7 +66,7 @@ export default class Pictionary extends React.Component {
 
   _drawCanvas() {
     const { width, height } = this.state.dimensions;
-    //this._drawRect(0, 0, width, height, 'black');
+    this._drawRect(0, 0, width, height * 2, 'black');
     this.ctx.drawImage(this.frames[this.currentFrame], 50, 50, this.birdWidth, this.birdHeight);
     this.currentFrame = (this.currentFrame + 1) % this.frames.length;
   }
@@ -81,7 +85,7 @@ export default class Pictionary extends React.Component {
           this.setState({dimensions})
         }}
       >
-      <canvas ref="pictcanvas" width={width} height={height} />
+      <canvas ref="pictcanvas" width={width} height={height * 2} />
       </Measure>
     );
   }

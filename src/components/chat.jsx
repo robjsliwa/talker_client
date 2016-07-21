@@ -29,7 +29,7 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount() {
-    let currentUserName = localStorage.getItem('userName');
+    let currentUserName = 'X1'; //localStorage.getItem('userName');
     if (currentUserName === null || SocketStore.isRoomReady === false) {
       //SocketStore.addSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     } else {
@@ -192,7 +192,7 @@ export default class Chat extends React.Component {
     console.log(sessionId);
     console.log(tracks);
 
-    this.localTracks = tracks;
+    /*this.localTracks = tracks;
 
     for (let i = 0; i < this.localTracks.length; i++) {
         if (this.localTracks[i].getType() == "video") {
@@ -206,7 +206,7 @@ export default class Chat extends React.Component {
             this.localTracks[i].attach($("#localAudio" + i)[0]);
         }
         this.state.xrtcSDK.addTrack(this.localTracks[i]);
-      }
+      }*/
   }
 
   _onSessionCreated(sessionId, roomName) {
@@ -224,7 +224,7 @@ export default class Chat extends React.Component {
   _onRemoteVideo(sessionId, track) {
     console.log('onRemoteVideo ' + sessionId + ' track ' + track);
 
-    let participant = track.getParticipantId();
+    /*let participant = track.getParticipantId();
     if (!this.remoteTracks[participant])
         this.remoteTracks[participant] = [];
     let idx = this.remoteTracks[participant].push(track);
@@ -246,7 +246,7 @@ export default class Chat extends React.Component {
             "<audio autoplay='1' id='" + id +  "' />");
     }
 
-    track.attach($("#" + id)[0]);
+    track.attach($("#" + id)[0]);*/
   }
 
   _onRemoteParticipantLeft(id) {
@@ -366,12 +366,11 @@ export default class Chat extends React.Component {
           </section>
         </div>
         <div ref="pictholder" className="col-xs-12 col-md-8">
-          <div id="room-id-input-buttons">
-            <button id="join-button" onClick={this._onAudioMute.bind(this)}>{this.state.isAudioMuted ? <i className="fa fa-microphone-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-microphone fa-2x" aria-hidden="true"></i>}</button>
-            <button id="join-button" onClick={this._onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
-            <button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
+          <div className="wrap">
+            <div className="box">
+              <Pictionary className="boxInner" />
+            </div>
           </div>
-          <Pictionary />
           <UserNameDialog ref="usernamemodal" />
         </div>
       </div>

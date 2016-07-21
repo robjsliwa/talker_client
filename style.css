@@ -152,8 +152,11 @@ input[type="username"].invalid {
 .box {
   float: left;
   position: relative;
-  width: 50%;
-  padding-bottom: 50%; }
+  width: 100%;
+  max-height: 87vh;
+  min-height: 87vh;
+  border-style: solid;
+  border-width: thin; }
 
 .boxInner {
   position: absolute;
