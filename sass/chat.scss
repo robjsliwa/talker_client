@@ -26,6 +26,10 @@
   }
 }
 
+.text-conversation::-webkit-scrollbar {
+  display: none;
+}
+
 .other {
   .avatar {
     &:after {
