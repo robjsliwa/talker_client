@@ -4,6 +4,10 @@ import SocketActions from '../actions/socket-actions';
 import SocketStore from '../stores/socket-store';
 import SocketConstants from '../constants/socket-constants';
 import UserNameDialog from './username-dialog';
+import LocalVideo from './local-video';
+import LocalAudio from './local-audio';
+import RemoteVideo from './remote-video';
+import _ from 'underscore';
 
 export default class Chat extends React.Component {
   constructor(props) {
@@ -20,6 +24,10 @@ export default class Chat extends React.Component {
       notificationReceived: false,
       isAudioMuted: false,
       isVideoMuted: false,
+      localVideoList: [],
+      localAudioList: [],
+      remoteVideoList: [],
+      remoteAudioList: [],
     }
 
     this.localTracks = [];
@@ -191,18 +199,29 @@ export default class Chat extends React.Component {
     this.localTracks = tracks;
 
     for (let i = 0; i < this.localTracks.length; i++) {
-        if (this.localTracks[i].getType() == "video") {
-            $("#localvideo").append(
-                "<video autoplay='1' id='localVideo" + i + "' />");
-            this.localTracks[i].attach($("#localVideo" + i)[0]);
-        } else {
-            $("#localvideo").append(
-                "<audio autoplay='1' muted='true' id='localAudio" + i +
-                "' />");
-            this.localTracks[i].attach($("#localAudio" + i)[0]);
-        }
-        this.state.xrtcSDK.addTrack(this.localTracks[i]);
+      if (this.localTracks[i].getType() == "video") {
+          this.localTracks[i].attach("");
+          let localVideo = this.state.localVideoList;
+          localVideo.push({
+            index: i,
+            src: this.localTracks[i].stream.jitsiObjectURL,
+          });
+          this.setState({
+            localVideoList: localVideo,
+          });
+      } else {
+          this.localTracks[i].attach("");
+          let localAudio = this.state.localAudioList;
+          localAudio.push({
+            index: i,
+            src: this.localTracks[i].stream.jitsiObjectURL,
+          });
+          this.setState({
+            localAudioList: localAudio,
+          });
       }
+      this.state.xrtcSDK.addTrack(this.localTracks[i]);
+    }
   }
 
   _onSessionCreated(sessionId, roomName) {
@@ -226,36 +245,62 @@ export default class Chat extends React.Component {
     let idx = this.remoteTracks[participant].push(track);
     let id = participant.replace(/(-.*$)|(@.*$)/,'') + track.getType();
 
+    track.attach(id);
     if (track.getType() == "video") {
-      if (this.videoTagCounter%2 == 0)
-      {
-        $("#remotevideo").append(
-            "<video autoplay='1' id='" + id +  "' />");
-      }
-      else {
-        $("#localvideo").append(
-            "<video autoplay='1' id='" + id +  "' />");
-      }
-      this.videoTagCounter++;
+        let remoteVideo = this.state.remoteVideoList;
+        remoteVideo.push({
+          index: id,
+          src: track.stream.jitsiObjectURL,
+          track: track,
+        });
+        this.setState({
+          remoteVideoList: remoteVideo,
+        });
     } else {
-        $("#remotevideo").append(
-            "<audio autoplay='1' id='" + id +  "' />");
+        let remoteAudio = this.state.remoteAudioList;
+        remoteAudio.push({
+          index: id,
+          src: track.stream.jitsiObjectURL,
+          track: track,
+        });
+        this.setState({
+          remoteAudioList: remoteAudio,
+        });
     }
-
-    track.attach($("#" + id)[0]);
   }
 
   _onRemoteParticipantLeft(id) {
     console.log('onRemoteParticipantLeft: ' + id);
-    console.log($("#remotevideo"));
+
     if (!this.remoteTracks[id]) {
       return;
     }
 
+    console.log('onLeft');
     let tracks = this.remoteTracks[id];
+    console.log(tracks);
     for (let i = 0; i < tracks.length; i++) {
-      tracks[i].detach($("#" + id.replace(/(-.*$)|(@.*$)/,'') + tracks[i].getType())[0]);
+      //tracks[i].detach($("#" + id.replace(/(-.*$)|(@.*$)/,'') + tracks[i].getType())[0]);
+      let trackId = participant.replace(/(-.*$)|(@.*$)/,'') + track[i].getType();
+      console.log('trackId: ' + trackId);
+      tracks[i].detach(trackId);
     }
+    console.log('onLeft - after detach');
+    console.log(tracks);
+
+    let remoteVideoList = this.state.remoteVideoList;
+
+    console.log('onLeft - remoteVideoList');
+    let trackObj = _.find(remoteVideoList, (trackObj) => {
+      return trackObj.id === id;
+    });
+
+    remoteVideoList = _.without(remoteVideoList, trackObj);
+    console.log('onLeft - remoteVideoList after remove');
+    console.log(remoteVideoList);
+    this.setState({
+      remoteVideoList: remoteVideoList,
+    });
   }
 
   _onSessionEnded(sessionId) {
@@ -299,31 +344,6 @@ export default class Chat extends React.Component {
   _onStopCall() {
 
   }
-
-/*
-<div className="wrap">
-  <div className="box">
-    <div id="localvideo" className="boxInner"></div>
-  </div>
-  <div className="box">
-    <div id="remotevideo" className="boxInner"></div>
-  </div>
-</div>
-
-<div className="wrap">
-  <div id="localvideo" className="box">
-    <div id="localvideo" className="boxInner"></div>
-  </div>
-  <div id="remotevideo" className="box">
-    <div id="remotevideo" className="boxInner"></div>
-  </div>
-</div>
-
-<div id="localvideo"></div>
-<div id="remotevideo"></div>
-
-<button id="join-button" onClick={this._onStopCall.bind(this)}><i className="fa fa-stop-circle fa-2x" aria-hidden="true"></i></button>
-*/
 
   render() {
     return <div className="container-fluid">
@@ -369,12 +389,21 @@ export default class Chat extends React.Component {
             <button id="join-button" onClick={this._onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
           </div>
           <div className="wrap">
-            <div id="localvideo" className="box">
-              <div id="localvideo" className="boxInner"></div>
-            </div>
-            <div id="remotevideo" className="box">
-              <div id="remotevideo" className="boxInner"></div>
-            </div>
+            {this.state.localVideoList.map((vid) => {
+              console.log('inRender');
+              console.log(vid);
+              return <LocalVideo vid={vid} />
+            })}
+            {this.state.localAudioList.map((audio) => {
+              console.log('inRender');
+              console.log(audio);
+              return <LocalAudio audio={audio} />
+            })}
+            {this.state.remoteVideoList.map((vid) => {
+              console.log('inRenderRemote');
+              console.log(vid);
+              return <RemoteVideo vid={vid} />
+            })}
           </div>
           <UserNameDialog ref="usernamemodal" />
         </div>
