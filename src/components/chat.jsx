@@ -24,7 +24,8 @@ export default class Chat extends React.Component {
 
     this.localTracks = [];
     this.remoteTracks = [];
-    this.videoTagCounter=0;
+    this.videoTagCounter = 0;
+    this.isWebRTCReady = false;
   }
 
   componentDidMount() {
@@ -87,7 +88,10 @@ export default class Chat extends React.Component {
     },
     () => {
       SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
-      this._initializeWebRTC();
+      if (this.isWebRTCReady === false) {
+        this.isWebRTCReady = true;
+        this._initializeWebRTC();
+      }
     }
     );
   }
