@@ -7,6 +7,7 @@ import UserNameDialog from './username-dialog';
 import LocalVideo from './local-video';
 import LocalAudio from './local-audio';
 import RemoteVideo from './remote-video';
+import RemoteAudio from './remote-audio';
 import _ from 'underscore';
 
 export default class Chat extends React.Component {
@@ -276,31 +277,33 @@ export default class Chat extends React.Component {
       return;
     }
 
-    console.log('onLeft');
     let tracks = this.remoteTracks[id];
-    console.log(tracks);
+    let trackId = null;
     for (let i = 0; i < tracks.length; i++) {
-      //tracks[i].detach($("#" + id.replace(/(-.*$)|(@.*$)/,'') + tracks[i].getType())[0]);
-      let trackId = participant.replace(/(-.*$)|(@.*$)/,'') + track[i].getType();
-      console.log('trackId: ' + trackId);
-      tracks[i].detach(trackId);
+      const mediaType = tracks[i].getType()
+      trackId = id.replace(/(-.*$)|(@.*$)/,'') + mediaType;
+      //tracks[i].detach(trackId);
+
+      if (mediaType === 'video') {
+        let remoteVideoList = this.state.remoteVideoList;
+        let trackObj = _.find(remoteVideoList, (obj) => {
+          return String(obj.index) === String(trackId);
+        });
+        remoteVideoList = _.without(remoteVideoList, trackObj);
+        this.setState({
+          remoteVideoList: remoteVideoList,
+        });
+      } else {
+        let remoteAudioList = this.state.remoteAudioList;
+        let trackObj = _.find(remoteAudioList, (obj) => {
+          return String(obj.index) === String(trackId);
+        });
+        remoteAudioList = _.without(remoteAudioList, trackObj);
+        this.setState({
+          remoteAudioList: remoteAudioList,
+        });
+      }
     }
-    console.log('onLeft - after detach');
-    console.log(tracks);
-
-    let remoteVideoList = this.state.remoteVideoList;
-
-    console.log('onLeft - remoteVideoList');
-    let trackObj = _.find(remoteVideoList, (trackObj) => {
-      return trackObj.id === id;
-    });
-
-    remoteVideoList = _.without(remoteVideoList, trackObj);
-    console.log('onLeft - remoteVideoList after remove');
-    console.log(remoteVideoList);
-    this.setState({
-      remoteVideoList: remoteVideoList,
-    });
   }
 
   _onSessionEnded(sessionId) {
@@ -403,6 +406,11 @@ export default class Chat extends React.Component {
               console.log('inRenderRemote');
               console.log(vid);
               return <RemoteVideo vid={vid} />
+            })}
+            {this.state.remoteAudioList.map((audio) => {
+              console.log('inRenderAudioRemote');
+              console.log(audio);
+              return <RemoteAudio audio={audio} />
             })}
           </div>
           <UserNameDialog ref="usernamemodal" />
