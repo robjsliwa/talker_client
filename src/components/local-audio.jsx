@@ -7,7 +7,7 @@ export default class LocalAudio extends React.Component {
 
   render() {
     return (
-      <audio autoPlay='1' muted='true' id={'localAudio' + this.props.audio.index} src={this.props.audio.src} />
+      <audio autoPlay='1' id={'localAudio' + this.props.audio.index} src={this.props.audio.src} />
     );
   }
 }
