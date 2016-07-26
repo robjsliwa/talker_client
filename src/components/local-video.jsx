@@ -5,12 +5,17 @@ export default class LocalVideo extends React.Component {
     super(props);
   }
 
+  /*
+  <div className="box">
+    <div className="boxInner">
+  </div>
+</div>
+  */
+
   render() {
     return (
-      <div className="box">
-        <div className="boxInner">
+      <div>
           {this.props.vid ? <video autoPlay="1" id={'localVideo' + this.props.vid.index} src={this.props.vid.src} /> : null}
-        </div>
       </div>
     );
   }
