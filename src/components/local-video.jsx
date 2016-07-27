@@ -3,19 +3,17 @@ import React from 'react';
 export default class LocalVideo extends React.Component {
   constructor(props) {
     super(props);
+    console.log('in constructor of localVideo');
+    console.log(this.props);
   }
-
-  /*
-  <div className="box">
-    <div className="boxInner">
-  </div>
-</div>
-  */
 
   render() {
     return (
-      <div>
-          {this.props.vid ? <video autoPlay="1" id={'localVideo' + this.props.vid.index} src={this.props.vid.src} /> : null}
+      <div className="box">
+        <div className="boxInner">
+          {this.props.video ? <video autoPlay="1" id={'localVideo' + this.props.video.index} src={this.props.video.src} /> : null}
+          {this.props.audio ? <audio autoPlay='1' id={'localAudio' + this.props.audio.index} src={this.props.audio.src} /> : null}
+        </div>
       </div>
     );
   }
