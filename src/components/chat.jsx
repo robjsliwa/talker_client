@@ -6,9 +6,9 @@ import SocketConstants from '../constants/socket-constants';
 import UserNameDialog from './username-dialog';
 import LocalVideo from './local-video';
 import RemoteVideo from './remote-video';
-import _ from 'underscore';
+import WebRTCBase from './webrtc-base';
 
-export default class Chat extends React.Component {
+class Chat extends React.Component {
   constructor(props) {
     super(props);
 
@@ -18,18 +18,7 @@ export default class Chat extends React.Component {
       userID: "",
       roomName: "",
       messages: [],
-      xrtcSDK: null,
-      userConfig: null,
-      notificationReceived: false,
-      isAudioMuted: false,
-      isVideoMuted: false,
-      localConnectionList: [],
-      remoteConnectionList: [],
     }
-
-    this.localTracks = [];
-    this.remoteTracks = [];
-    this.videoTagCounter=0;
   }
 
   componentDidMount() {
@@ -49,8 +38,9 @@ export default class Chat extends React.Component {
     SocketStore.removeSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     SocketStore.removeSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
 
-    if (this.state.xrtcSDK != null) {
-      this.state.xrtcSDK.endSession();
+    if (this.props) {
+      console.log('endSession called:')
+      this.props.endSession();
     }
   }
 
@@ -92,7 +82,7 @@ export default class Chat extends React.Component {
     },
     () => {
       SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
-      this._initializeWebRTC();
+      this.props.initializeWebRTC(this.state.userName, this.state.roomName, SocketStore.domain, SocketStore.token);
     }
     );
   }
@@ -133,229 +123,8 @@ export default class Chat extends React.Component {
     });
   }
 
-  _initializeWebRTC() {
-    console.log('CHECK: ' + this.state.userName);
-    let userConfig = {
-      jid: this.state.userName + SocketStore.domain,
-      password: '',
-      roomName: this.state.roomName + SocketStore.domain,
-      domain: SocketStore.domain,
-      token: SocketStore.token,
-      traceId: "5993E6CC-6D6D-4C9B-BC48-C0B1F29FC234",
-      useEventManager: true,
-      callType: "videocall",
-      loginType: "connect",
-    }
-    let serverConfig = userConfig;
-    console.log("init SDK");
-    let xrtcSDK = new window.xrtcSDK(serverConfig);
-    this.setState({
-      xrtcSDK: xrtcSDK,
-      userConfig: userConfig,
-    });
-
-    console.log(userConfig);
-
-    xrtcSDK.createReceiver(userConfig.jid);
-    xrtcSDK.create(userConfig, (result) => {
-      if (result) {
-        console.log(result);
-      }
-      console.log("SDK create complete");
-    });
-    xrtcSDK.createSession([], userConfig, this._onWebRTCConnect);
-
-    if (xrtcSDK != null) {
-      xrtcSDK.onLocalAudio = this._onLocalAudio.bind(this);
-      xrtcSDK.onLocalVideo = this._onLocalVideo.bind(this);
-      xrtcSDK.onSessionCreated = this._onSessionCreated.bind(this);
-      xrtcSDK.onRemoteParticipantJoined = this._onRemoteParticipantJoined.bind(this);
-      xrtcSDK.onSessionConnected = this._onSessionConnected.bind(this);
-      xrtcSDK.onRemoteVideo = this._onRemoteVideo.bind(this);
-      xrtcSDK.onRemoteParticipantLeft = this._onRemoteParticipantLeft.bind(this);
-      xrtcSDK.onSessionEnded = this._onSessionEnded.bind(this);
-      xrtcSDK.onConnectionError = this._onConnectionError.bind(this);
-      xrtcSDK.onNotificationReceived = this._onNotificationReceived.bind(this);
-    }
-  }
-
-  _onWebRTCConnect(response) {
-    console.log('createSession callback');
-    console.log(response);
-  }
-
-  _onLocalAudio() {
-    console.log('onLocalAudio');
-  }
-
-  _onLocalVideo(sessionId, tracks) {
-    console.log('onLocalVideo');
-    console.log(sessionId);
-    console.log(tracks);
-
-    this.localTracks = tracks;
-    let localConnectionList = this.state.localConnectionList;
-    let audioConnection = null;
-    let videoConnection = null;
-
-    for (let i = 0; i < this.localTracks.length; i++) {
-      if (this.localTracks[i].getType() == "video") {
-          this.localTracks[i].attach("");
-          videoConnection = {
-            index: i,
-            src: this.localTracks[i].stream.jitsiObjectURL,
-          }
-      } else {
-          this.localTracks[i].attach("");
-          audioConnection = {
-            index: i,
-            src: this.localTracks[i].stream.jitsiObjectURL,
-          }
-      }
-      this.state.xrtcSDK.addTrack(this.localTracks[i]);
-    }
-    localConnectionList.push({
-      video: videoConnection,
-      audio: audioConnection,
-    });
-    this.setState({
-      localConnectionList: localConnectionList,
-    });
-  }
-
-  _onSessionCreated(sessionId, roomName) {
-    console.log('onSessionCreated - session created with ' + sessionId + ' and user joined in ' + roomName);
-  }
-
-  _onRemoteParticipantJoined() {
-    console.log('onRemoteParticipantJoined');
-  }
-
-  _onSessionConnected() {
-    console.log('onSessionConnected');
-  }
-
-  _onRemoteVideo(sessionId, track) {
-    console.log('onRemoteVideo ' + sessionId + ' track ' + track);
-
-    let participant = track.getParticipantId();
-    if (!this.remoteTracks[participant])
-        this.remoteTracks[participant] = [];
-    let idx = this.remoteTracks[participant].push(track);
-    let baseId = participant.replace(/(-.*$)|(@.*$)/,'');
-    let id = baseId + track.getType();
-
-    let remoteConnectionList = this.state.remoteConnectionList;
-    let audioConnection = null;
-    let videoConnection = null;
-
-    // check if the audio or video component for this base track
-    // already exists
-    let existingConnection = _.find(remoteConnectionList, (obj) => {
-      return obj.baseId === baseId;
-    });
-
-    // if it does remove half populated connection and save the audio
-    // or video part to be used with the new connection for this baseId
-    if (existingConnection) {
-      audioConnection = existingConnection.audio;
-      videoConnection = existingConnection.video;
-      remoteConnectionList = _.without(remoteConnectionList, existingConnection);
-    }
-
-    track.attach(id);
-    if (track.getType() == "video") {
-      console.log('onRemoteVideo video');
-      videoConnection = {
-        index: id,
-        src: track.stream.jitsiObjectURL,
-      }
-    } else {
-      console.log('onRemoteVideo audio');
-      audioConnection = {
-        index: id,
-        src: track.stream.jitsiObjectURL,
-      }
-    }
-    remoteConnectionList.push({
-      video: videoConnection,
-      audio: audioConnection,
-      baseId: baseId,
-      track: track,
-    });
-    this.setState({
-      remoteConnectionList: remoteConnectionList,
-    });
-  }
-
-  _onRemoteParticipantLeft(id) {
-    console.log('onRemoteParticipantLeft: ' + id);
-
-    if (!this.remoteTracks[id]) {
-      return;
-    }
-
-    let tracks = this.remoteTracks[id];
-    for (let i = 0; i < tracks.length; i++) {
-      let baseId = id.replace(/(-.*$)|(@.*$)/,'');
-      //tracks[i].detach(trackId);
-
-      let remoteConnectionList = this.state.remoteConnectionList;
-      let existingConnection = _.find(remoteConnectionList, (obj) => {
-        console.log(obj.baseId + '===' + baseId);
-        return obj.baseId === baseId;
-      });
-
-      remoteConnectionList = _.without(remoteConnectionList, existingConnection);
-      this.setState({
-        remoteConnectionList: remoteConnectionList,
-      });
-    }
-  }
-
-  _onSessionEnded(sessionId) {
-    console.log('onSessionEnded: ' + sessionId);
-  }
-
-  _onConnectionError(sessionId) {
-    console.log('onConnectionError: ' + sessionId);
-  }
-
-  _onNotificationReceived() {
-    console.log('onNotificationReceived');
-  }
-
-  _onAudioMute() {
-    const isMuted = !this.state.isAudioMuted;
-    this.setState({
-      isAudioMuted: isMuted,
-    });
-
-    this.state.xrtcSDK.audioMuteUnmute(isMuted, (response) => {
-      if (!response) {
-        console.log("Local audio mute/unmute failed");
-      }
-    });
-  }
-
-  _onVideoMute() {
-    const isMuted = !this.state.isVideoMuted;
-    this.setState({
-      isVideoMuted: isMuted,
-    });
-
-    this.state.xrtcSDK.videoMuteUnmute(isMuted, (response) => {
-      if (!response) {
-        console.log("Local audio mute/unmute failed");
-      }
-    });
-  }
-
-  _onStopCall() {
-
-  }
-
   render() {
+    console.log(this);
     return <div className="container-fluid">
       <div className="row">
         <div className="col-xs-4 col-md-3">
@@ -395,14 +164,14 @@ export default class Chat extends React.Component {
         </div>
         <div className="col-xs-14 col-md-9">
           <div className="button-center" id="room-id-input-buttons">
-            <button id="join-button" onClick={this._onAudioMute.bind(this)}>{this.state.isAudioMuted ? <i className="fa fa-microphone-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-microphone fa-2x" aria-hidden="true"></i>}</button>
-            <button id="join-button" onClick={this._onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
+            <button id="join-button" onClick={this.props.onAudioMute.bind(this)}>{this.state.isAudioMuted ? <i className="fa fa-microphone-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-microphone fa-2x" aria-hidden="true"></i>}</button>
+            <button id="join-button" onClick={this.props.onVideoMute.bind(this)}>{this.state.isVideoMuted ? <i className="fa fa-eye-slash fa-2x" aria-hidden="true"></i> : <i className="fa fa-video-camera fa-2x" aria-hidden="true"></i>}</button>
           </div>
           <div className="wrap">
-            {this.state.localConnectionList.map((connection) => {
+            {this.props.localVideos.map((connection) => {
               return <LocalVideo video={connection.video} audio={connection.audio} />
             })}
-            {this.state.remoteConnectionList.map((connection) => {
+            {this.props.remoteVideos.map((connection) => {
               return <RemoteVideo video={connection.video} audio={connection.audio} />
             })}
           </div>
@@ -412,3 +181,5 @@ export default class Chat extends React.Component {
     </div>
   }
 }
+
+export default WebRTCBase(Chat);
