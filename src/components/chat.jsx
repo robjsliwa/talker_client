@@ -7,6 +7,7 @@ import UserNameDialog from './username-dialog';
 import LocalVideo from './local-video';
 import RemoteVideo from './remote-video';
 import WebRTCBase from './webrtc-base';
+import WebRTCConstants from '../constants/webrtc-constants';
 
 class Chat extends React.Component {
   constructor(props) {
@@ -37,6 +38,8 @@ class Chat extends React.Component {
     SocketStore.removeSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
     SocketStore.removeSocketListener(SocketConstants.SOCKET_CONNECT, this._onSocketOpen.bind(this));
     SocketStore.removeSocketListener(SocketConstants.SOCKET_DISCONNECT, this._onSocketDisconnet.bind(this));
+    this.props.removeWebRTCListener(WebRTCConstants.WEB_RTC_ON_AUDIO_MUTE, this._onAudioMute.bind(this));
+    this.props.removeWebRTCListener(WebRTCConstants.WEB_RTC_ON_VIDEO_MUTE, this._onVideoMute.bind(this));
 
     if (this.props) {
       console.log('endSession called:')
@@ -83,6 +86,8 @@ class Chat extends React.Component {
     () => {
       SocketStore.addSocketListener(SocketConstants.SOCKET_RECEIVE_TEXT_MESSAGE, this._onReceivedMessage.bind(this));
       this.props.initializeWebRTC(this.state.userName, this.state.roomName, SocketStore.domain, SocketStore.token);
+      this.props.addWebRTCListener(WebRTCConstants.WEB_RTC_ON_AUDIO_MUTE, this._onAudioMute.bind(this));
+      this.props.addWebRTCListener(WebRTCConstants.WEB_RTC_ON_VIDEO_MUTE, this._onVideoMute.bind(this));
     }
     );
   }
@@ -121,6 +126,14 @@ class Chat extends React.Component {
     this.setState({
       chatBox: "",
     });
+  }
+
+  _onVideoMute() {
+    console.log('VIDEO MUTE FROM CHAT');
+  }
+
+  _onAudioMute() {
+    console.log('AUDIO MUTE FROM CHAT');
   }
 
   render() {

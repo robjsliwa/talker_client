@@ -1,5 +1,7 @@
 import React from 'react';
 import _ from 'underscore';
+import { WebRTCEvents } from './webrtc-events';
+import WebRTCConstants from '../constants/webrtc-constants';
 
 export default (ComposedComponent) => {
   return class WebRTCBase extends React.Component {
@@ -17,6 +19,7 @@ export default (ComposedComponent) => {
 
       this.localTracks = [];
       this.remoteTracks = [];
+      this.eventEmitter = new WebRTCEvents();
     }
 
     _initializeWebRTC(userName, roomName, domain, token) {
@@ -78,6 +81,7 @@ export default (ComposedComponent) => {
 
     _onLocalAudio() {
       console.log('onLocalAudio');
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_LOCAL_AUDIO);
     }
 
     _onLocalVideo(sessionId, tracks) {
@@ -112,19 +116,24 @@ export default (ComposedComponent) => {
       });
       this.setState({
         localConnectionList: localConnectionList,
+      }, () => {
+        this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_LOCAL_VIDEO);
       });
     }
 
     _onSessionCreated(sessionId, roomName) {
       console.log('onSessionCreated - session created with ' + sessionId + ' and user joined in ' + roomName);
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_SESSION_CREATED);
     }
 
     _onRemoteParticipantJoined() {
       console.log('onRemoteParticipantJoined');
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_REMOTE_PARTICIPANT_JOINED);
     }
 
     _onSessionConnected() {
       console.log('onSessionConnected');
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_SESSION_CONNECTED);
     }
 
     _onRemoteVideo(sessionId, track) {
@@ -177,6 +186,8 @@ export default (ComposedComponent) => {
       });
       this.setState({
         remoteConnectionList: remoteConnectionList,
+      }, () => {
+        this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_REMOTE_VIDEO);
       });
     }
 
@@ -194,7 +205,6 @@ export default (ComposedComponent) => {
 
         let remoteConnectionList = this.state.remoteConnectionList;
         let existingConnection = _.find(remoteConnectionList, (obj) => {
-          console.log(obj.baseId + '===' + baseId);
           return obj.baseId === baseId;
         });
 
@@ -203,30 +213,39 @@ export default (ComposedComponent) => {
           remoteConnectionList: remoteConnectionList,
         });
       }
+
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_REMOTE_PARTICIPANT_LEFT);
     }
 
     _onSessionEnded(sessionId) {
       console.log('onSessionEnded: ' + sessionId);
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_SESSION_ENDED);
     }
 
     _onConnectionError(sessionId) {
       console.log('onConnectionError: ' + sessionId);
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_CONNECTION_ERROR);
     }
 
     _onNotificationReceived() {
       console.log('onNotificationReceived');
+      this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_NOTIFICATION_RECEIVED);
     }
 
     _onAudioMute() {
       const isMuted = !this.state.isAudioMuted;
       this.setState({
         isAudioMuted: isMuted,
-      });
-
-      this.state.xrtcSDK.audioMuteUnmute(isMuted, (response) => {
-        if (!response) {
-          console.log("Local audio mute/unmute failed");
-        }
+      }, () => {
+        this.state.xrtcSDK.audioMuteUnmute(isMuted, (response) => {
+          if (!response) {
+            console.log("Local audio mute/unmute failed");
+            this.setState({
+              isAudioMuted: !this.state.isAudioMuted,
+            });
+          }
+        });
+        this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_AUDIO_MUTE);
       });
     }
 
@@ -234,12 +253,15 @@ export default (ComposedComponent) => {
       const isMuted = !this.state.isVideoMuted;
       this.setState({
         isVideoMuted: isMuted,
-      });
-
-      this.state.xrtcSDK.videoMuteUnmute(isMuted, (response) => {
-        if (!response) {
-          console.log("Local audio mute/unmute failed");
-        }
+      }, () => {
+        this.state.xrtcSDK.videoMuteUnmute(isMuted, (response) => {
+          if (!response) {
+            this.setState({
+              isVideoMuted: !this.state.isVideoMuted,
+            });
+          }
+        });
+        this.eventEmitter.emitWebRTCEvent(WebRTCConstants.WEB_RTC_ON_VIDEO_MUTE);
       });
     }
 
@@ -261,6 +283,8 @@ export default (ComposedComponent) => {
           localVideos={this.localVideos}
           remoteVideos={this.remoteVideos}
           endSession={this._sessionEnd.bind(this)}
+          addWebRTCListener={this.eventEmitter.addWebRTCListener.bind(this.eventEmitter)}
+          removeWebRTCListener={this.eventEmitter.removeWebRTCListener.bind(this.eventEmitter)}
         />
       )
     }
