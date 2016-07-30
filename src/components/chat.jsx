@@ -182,10 +182,10 @@ class Chat extends React.Component {
           </div>
           <div className="wrap">
             {this.props.localVideos.map((connection) => {
-              return <LocalVideo video={connection.video} audio={connection.audio} />
+              return <LocalVideo key={connection.video.index} video={connection.video} audio={connection.audio} />
             })}
             {this.props.remoteVideos.map((connection) => {
-              return <RemoteVideo video={connection.video} audio={connection.audio} />
+              return <RemoteVideo key={connection.video.index} video={connection.video} audio={connection.audio} />
             })}
           </div>
           <UserNameDialog ref="usernamemodal" />
