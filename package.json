@@ -13,6 +13,7 @@
     "flux": "^2.1.1",
     "font-awesome": "^4.3.0",
     "iris-auth-js-sdk": "1.0.1",
+    "iris-react-webrtc": "0.0.6",
     "keymirror": "^0.1.1",
     "lodash": "^3.6.0",
     "moment": "^2.13.0",

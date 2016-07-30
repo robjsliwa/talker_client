@@ -4,10 +4,7 @@ import SocketActions from '../actions/socket-actions';
 import SocketStore from '../stores/socket-store';
 import SocketConstants from '../constants/socket-constants';
 import UserNameDialog from './username-dialog';
-import LocalVideo from './local-video';
-import RemoteVideo from './remote-video';
-import WebRTCBase from './webrtc-base';
-import WebRTCConstants from '../constants/webrtc-constants';
+import withWebRTC, { LocalVideo, RemoteVideo, WebRTCConstants } from 'iris-react-webrtc';
 
 class Chat extends React.Component {
   constructor(props) {
@@ -195,4 +192,4 @@ class Chat extends React.Component {
   }
 }
 
-export default WebRTCBase(Chat);
+export default withWebRTC(Chat);
